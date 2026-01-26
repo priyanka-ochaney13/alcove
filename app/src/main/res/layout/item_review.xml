@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/rounded_input_background">
+
+    <!-- User Name -->
+    <TextView
+        android:id="@+id/userName"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="User Name"
+        android:textSize="14sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Rating Bar -->
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:rating="4"
+        android:isIndicator="true"
+        android:scaleX="0.7"
+        android:scaleY="0.7"
+        android:layout_gravity="start"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Review Text -->
+    <TextView
+        android:id="@+id/reviewText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Great book!"
+        android:textSize="12sp"
+        android:textColor="@color/black"
+        android:lineSpacingExtra="2dp" />
+
+</LinearLayout>

@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="12dp"
+    android:layout_marginBottom="12dp"
+    android:background="@drawable/rounded_input_background">
+
+    <!-- Book Title -->
+    <TextView
+        android:id="@+id/bookTitle"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Book Title"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        android:textColor="@color/black"
+        android:layout_marginBottom="4dp" />
+
+    <!-- Book Author -->
+    <TextView
+        android:id="@+id/bookAuthor"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Author"
+        android:textSize="12sp"
+        android:textColor="@color/gray"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Rating Bar -->
+    <RatingBar
+        android:id="@+id/ratingBar"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:numStars="5"
+        android:rating="4"
+        android:isIndicator="true"
+        android:scaleX="0.75"
+        android:scaleY="0.75"
+        android:layout_gravity="start"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Review Text -->
+    <TextView
+        android:id="@+id/reviewText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Review text"
+        android:textSize="12sp"
+        android:textColor="@color/black"
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Delete Button -->
+    <ImageView
+        android:id="@+id/deleteBtn"
+        android:layout_width="24dp"
+        android:layout_height="24dp"
+        android:src="@drawable/ic_delete"
+        android:contentDescription="Delete"
+        android:layout_gravity="end"
+        android:scaleType="centerInside" />
+
+</LinearLayout>

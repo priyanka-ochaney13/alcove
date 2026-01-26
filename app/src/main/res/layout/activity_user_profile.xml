@@ -1,0 +1,211 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/main"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/white"
+    tools:context=".UserProfileActivity"
+    tools:ignore="MissingDefaultResource">
+
+    <!-- Back Button -->
+    <ImageView
+        android:id="@+id/backButton"
+        android:layout_width="40dp"
+        android:layout_height="40dp"
+        android:padding="8dp"
+        android:src="@drawable/ic_back"
+        android:contentDescription="Back"
+        android:scaleType="centerInside"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+    <!-- ScrollView for content -->
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toBottomOf="@+id/backButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintBottom_toBottomOf="parent">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:gravity="center">
+
+            <!-- Profile Image -->
+            <ImageView
+                android:id="@+id/profileImage"
+                android:layout_width="120dp"
+                android:layout_height="120dp"
+                android:src="@drawable/ic_profile"
+                android:scaleType="centerInside"
+                android:background="@drawable/rounded_input_background"
+                android:layout_marginBottom="16dp" />
+
+            <!-- User Name -->
+            <TextView
+                android:id="@+id/userName"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="John Doe"
+                android:textSize="24sp"
+                android:textStyle="bold"
+                android:textColor="@color/black"
+                android:layout_marginBottom="8dp" />
+
+            <!-- User Email -->
+            <TextView
+                android:id="@+id/userEmail"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="john@example.com"
+                android:textSize="14sp"
+                android:textColor="@color/gray"
+                android:layout_marginBottom="32dp" />
+
+            <!-- Stats Section -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:layout_marginBottom="32dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@drawable/rounded_input_background">
+
+                    <TextView
+                        android:id="@+id/booksReadCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="42"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Books Read"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:layout_marginStart="8dp"
+                    android:layout_marginEnd="8dp"
+                    android:background="@drawable/rounded_input_background">
+
+                    <TextView
+                        android:id="@+id/currentlyReadingCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="3"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Reading"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical"
+                    android:gravity="center"
+                    android:padding="12dp"
+                    android:background="@drawable/rounded_input_background">
+
+                    <TextView
+                        android:id="@+id/wantToReadCount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="15"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:textColor="@color/black" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="Want to Read"
+                        android:textSize="12sp"
+                        android:textColor="@color/gray" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <!-- Edit Profile Button -->
+            <Button
+                android:id="@+id/editProfileBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Edit Profile"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_button_background"
+                android:layout_marginBottom="12dp" />
+
+            <!-- My Reviews Button -->
+            <Button
+                android:id="@+id/myReviewsBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="My Reviews"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/rounded_input_background"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Settings Button -->
+            <Button
+                android:id="@+id/settingsBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Settings"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/rounded_input_background"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Logout Button -->
+            <Button
+                android:id="@+id/logoutBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Logout"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_button_background" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
