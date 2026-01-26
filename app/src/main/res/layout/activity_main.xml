@@ -27,9 +27,9 @@
             android:id="@+id/searchIcon"
             android:layout_width="24dp"
             android:layout_height="24dp"
-            android:src="@drawable/ic_search"
             android:contentDescription="Search"
-            android:scaleType="centerInside" />
+            android:scaleType="centerInside"
+            android:src="@drawable/ic_search" />
 
         <View
             android:layout_width="0dp"

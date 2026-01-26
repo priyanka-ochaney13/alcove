@@ -11,6 +11,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.alcove.dummy.DummyDataGenerator;
+
 import java.util.ArrayList;
 import java.util.List;
 

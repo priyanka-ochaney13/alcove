@@ -1,4 +1,8 @@
-package com.alcove;
+package com.alcove.dummy;
+
+import com.alcove.Book;
+import com.alcove.Review;
+import com.alcove.MyReviewItem;
 
 import java.util.ArrayList;
 import java.util.List;
