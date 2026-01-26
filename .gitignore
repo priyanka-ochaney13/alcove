@@ -1,0 +1,34 @@
+# IDE
+*.iml
+.idea/
+.vscode/
+
+# Gradle
+.gradle/
+/build/
+/app/build/
+
+# Local environment
+local.properties
+gradle.properties
+
+# Build artifacts
+/captures
+.externalNativeBuild
+.cxx
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Android Studio
+*.apk
+*.ap_
+*.dex
+*.class
+*.jar
+*.aar
+
+# Gradle wrapper (optional - include if you want to commit wrapper)
+# gradle-wrapper.jar
+# gradle-wrapper.properties
