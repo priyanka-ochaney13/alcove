@@ -6,6 +6,7 @@ public class Book {
     private String author;
     private float rating;
     private int ratingCount;
+    private String imageUrl;
 
     public Book(int id, String title, String author, float rating, int ratingCount) {
         this.id = id;
@@ -13,6 +14,15 @@ public class Book {
         this.author = author;
         this.rating = rating;
         this.ratingCount = ratingCount;
+    }
+
+    public Book(int id, String title, String author, float rating, int ratingCount, String imageUrl) {
+        this.id = id;
+        this.title = title;
+        this.author = author;
+        this.rating = rating;
+        this.ratingCount = ratingCount;
+        this.imageUrl = imageUrl;
     }
 
     // Getters
@@ -36,6 +46,10 @@ public class Book {
         return ratingCount;
     }
 
+    public String getImageUrl() {
+        return imageUrl;
+    }
+
     // Setters
     public void setId(int id) {
         this.id = id;
@@ -55,5 +69,9 @@ public class Book {
 
     public void setRatingCount(int ratingCount) {
         this.ratingCount = ratingCount;
+    }
+
+    public void setImageUrl(String imageUrl) {
+        this.imageUrl = imageUrl;
     }
 }

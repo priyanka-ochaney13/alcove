@@ -11,6 +11,8 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.bumptech.glide.Glide;
+
 import java.util.List;
 
 public class MyReviewAdapter extends RecyclerView.Adapter<MyReviewAdapter.MyReviewViewHolder> {
@@ -34,9 +36,30 @@ public class MyReviewAdapter extends RecyclerView.Adapter<MyReviewAdapter.MyRevi
     public void onBindViewHolder(@NonNull MyReviewViewHolder holder, int position) {
         MyReviewItem review = reviews.get(position);
         holder.bookTitle.setText(review.getBookTitle());
-        holder.bookAuthor.setText(review.getBookAuthor());
+
+        if (review.getBookAuthor() != null) {
+            holder.bookAuthor.setText(review.getBookAuthor());
+            holder.bookAuthor.setVisibility(View.VISIBLE);
+        } else {
+            holder.bookAuthor.setVisibility(View.GONE);
+        }
+
         holder.ratingBar.setRating(review.getRating());
-        holder.reviewText.setText(review.getReviewText());
+
+        if (review.getReviewText() != null) {
+            holder.reviewText.setText(review.getReviewText());
+            holder.reviewText.setVisibility(View.VISIBLE);
+        } else {
+            holder.reviewText.setVisibility(View.GONE);
+        }
+
+        if (holder.bookCover != null) {
+            Glide.with(context)
+                .load(review.getBookCoverUrl())
+                .placeholder(R.drawable.rounded_button_background)
+                .error(R.drawable.rounded_button_background)
+                .into(holder.bookCover);
+        }
     }
 
     @Override
@@ -50,6 +73,7 @@ public class MyReviewAdapter extends RecyclerView.Adapter<MyReviewAdapter.MyRevi
         RatingBar ratingBar;
         TextView reviewText;
         ImageView deleteBtn;
+        ImageView bookCover;
 
         public MyReviewViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -58,6 +82,7 @@ public class MyReviewAdapter extends RecyclerView.Adapter<MyReviewAdapter.MyRevi
             ratingBar = itemView.findViewById(R.id.ratingBar);
             reviewText = itemView.findViewById(R.id.reviewText);
             deleteBtn = itemView.findViewById(R.id.deleteBtn);
+            bookCover = itemView.findViewById(R.id.bookCover);
         }
     }
 }

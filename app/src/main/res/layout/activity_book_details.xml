@@ -91,6 +91,41 @@
                 android:textColor="@color/gray"
                 android:layout_marginBottom="24dp" />
 
+            <!-- AI Summary Card -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/aiSummaryCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                app:cardBackgroundColor="#E3F2FD"
+                app:cardCornerRadius="12dp"
+                android:layout_marginBottom="24dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="✨ AI Review Summary"
+                        android:textStyle="bold"
+                        android:textColor="#1565C0"
+                        android:textSize="16sp"
+                        android:layout_marginBottom="8dp"/>
+
+                    <TextView
+                        android:id="@+id/aiSummaryText"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="Loading summary..."
+                        android:textColor="#0D47A1"
+                        android:textSize="14sp"
+                        android:lineSpacingExtra="4dp"/>
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
+
             <!-- Description -->
             <TextView
                 android:layout_width="match_parent"
@@ -105,7 +140,7 @@
                 android:id="@+id/description"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="Book description goes here..."
+                android:text="Pride and Prejudice follows the character development of Elizabeth Bennet, the protagonist of the book, who learns about the repercussions of hasty judgments and comes to appreciate the difference between superficial goodness and actual goodness."
                 android:textSize="14sp"
                 android:textColor="@color/black"
                 android:layout_marginBottom="24dp"
@@ -132,6 +167,18 @@
                 android:textStyle="bold"
                 android:textColor="@color/black"
                 android:layout_marginBottom="12dp" />
+
+            <!-- Write Review Button -->
+            <Button
+                android:id="@+id/writeReviewBtn"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Write a Review"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_button_background"
+                android:layout_marginBottom="16dp" />
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/reviewsRecycler"

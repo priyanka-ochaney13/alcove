@@ -27,7 +27,7 @@
             android:layout_width="24dp"
             android:layout_height="24dp"
             android:src="@drawable/ic_back"
-            android:contentDescription="Back"
+            android:contentDescription="@string/back"
             android:scaleType="centerInside" />
 
         <EditText
@@ -37,7 +37,7 @@
             android:layout_weight="1"
             android:layout_marginStart="16dp"
             android:layout_marginEnd="16dp"
-            android:hint="Search books..."
+            android:hint="@string/search_hint"
             android:paddingStart="16dp"
             android:paddingEnd="16dp"
             android:background="@drawable/rounded_input_background"
@@ -48,13 +48,142 @@
 
     </LinearLayout>
 
+    <!-- Filter Toggle Button -->
+    <Button
+        android:id="@+id/filterToggleButton"
+        android:layout_width="match_parent"
+        android:layout_height="48dp"
+        android:text="Show Filters"
+        android:background="@drawable/rounded_input_background"
+        android:textColor="@color/black"
+        android:layout_margin="16dp"
+        app:layout_constraintTop_toBottomOf="@+id/topBar"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent" />
+
+    <!-- Filter Panel -->
+    <LinearLayout
+        android:id="@+id/filterPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:padding="16dp"
+        android:background="?attr/colorSurfaceVariant"
+        android:visibility="gone"
+        app:layout_constraintTop_toBottomOf="@+id/filterToggleButton"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintEnd_toEndOf="parent">
+
+        <!-- Author Filter -->
+        <EditText
+            android:id="@+id/authorFilter"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Author"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/rounded_input_background"
+            android:inputType="text"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
+
+        <!-- Genre Filter -->
+        <EditText
+            android:id="@+id/genreFilter"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Genre"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/rounded_input_background"
+            android:inputType="text"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
+
+        <!-- Rating Range -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginBottom="8dp">
+
+            <EditText
+                android:id="@+id/minRatingFilter"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:layout_marginEnd="8dp"
+                android:hint="Min Rating"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/rounded_input_background"
+                android:inputType="numberDecimal"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray" />
+
+            <EditText
+                android:id="@+id/maxRatingFilter"
+                android:layout_width="0dp"
+                android:layout_height="40dp"
+                android:layout_weight="1"
+                android:hint="Max Rating"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:background="@drawable/rounded_input_background"
+                android:inputType="numberDecimal"
+                android:textColor="@color/black"
+                android:textColorHint="@color/gray" />
+
+        </LinearLayout>
+
+        <!-- Publication Year -->
+        <EditText
+            android:id="@+id/yearFilter"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:hint="Publication Year"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/rounded_input_background"
+            android:inputType="number"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
+
+        <!-- ISBN Filter -->
+        <EditText
+            android:id="@+id/isbnFilter"
+            android:layout_width="match_parent"
+            android:layout_height="40dp"
+            android:layout_marginBottom="8dp"
+            android:hint="ISBN"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp"
+            android:background="@drawable/rounded_input_background"
+            android:inputType="text"
+            android:textColor="@color/black"
+            android:textColorHint="@color/gray" />
+
+        <!-- Apply Filters Button -->
+        <Button
+            android:id="@+id/applyFiltersButton"
+            android:layout_width="match_parent"
+            android:layout_height="48dp"
+            android:text="Apply Filters"
+            android:background="@drawable/rounded_input_background"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
+
     <!-- Search Results Grid -->
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/searchResultsRecycler"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:padding="8dp"
-        app:layout_constraintTop_toBottomOf="@+id/topBar"
+        app:layout_constraintTop_toBottomOf="@+id/filterPanel"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintBottom_toBottomOf="parent" />

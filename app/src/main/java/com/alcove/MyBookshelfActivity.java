@@ -2,36 +2,34 @@ package com.alcove;
 
 import android.os.Bundle;
 import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Button;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
-import androidx.recyclerview.widget.GridLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentActivity;
+import androidx.viewpager2.adapter.FragmentStateAdapter;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.alcove.dummy.DummyDataGenerator;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 
-import java.util.ArrayList;
-import java.util.List;
-
+/**
+ * MyBookshelfActivity - Demonstrates Fragment usage with swipeable tabs using ViewPager2
+ * Swipe gestures allow switching between Currently Reading, Want to Read, and Read tabs
+ */
 public class MyBookshelfActivity extends AppCompatActivity {
 
-    private Button currentlyReadingBtn;
-    private Button wantToReadBtn;
-    private Button readBtn;
-    private RecyclerView bookshelfRecycler;
     private ImageView backButton;
-    private BookAdapter bookAdapter;
-    private int currentTab = 0; // 0: Currently Reading, 1: Want to Read, 2: Read
+    private TabLayout tabLayout;
+    private ViewPager2 viewPager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_my_bookshelf);
         ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
@@ -40,60 +38,59 @@ public class MyBookshelfActivity extends AppCompatActivity {
         });
 
         // Initialize views
-        currentlyReadingBtn = findViewById(R.id.currentlyReadingBtn);
-        wantToReadBtn = findViewById(R.id.wantToReadBtn);
-        readBtn = findViewById(R.id.readBtn);
-        bookshelfRecycler = findViewById(R.id.bookshelfRecycler);
         backButton = findViewById(R.id.backButton);
+        tabLayout = findViewById(R.id.tabLayout);
+        viewPager = findViewById(R.id.viewPager);
 
-        // Setup initial view
-        displayBooks(0);
+        // Setup ViewPager2 with adapter
+        BookshelfPagerAdapter adapter = new BookshelfPagerAdapter(this);
+        viewPager.setAdapter(adapter);
 
-        // Tab buttons
-        currentlyReadingBtn.setOnClickListener(v -> {
-            currentTab = 0;
-            updateTabButtons();
-            displayBooks(0);
-        });
-
-        wantToReadBtn.setOnClickListener(v -> {
-            currentTab = 1;
-            updateTabButtons();
-            displayBooks(1);
-        });
-
-        readBtn.setOnClickListener(v -> {
-            currentTab = 2;
-            updateTabButtons();
-            displayBooks(2);
-        });
+        // Attach TabLayout to ViewPager2
+        new TabLayoutMediator(tabLayout, viewPager, (tab, position) -> {
+            switch (position) {
+                case 0:
+                    tab.setText("Currently Reading");
+                    break;
+                case 1:
+                    tab.setText("Want to Read");
+                    break;
+                case 2:
+                    tab.setText("Read");
+                    break;
+            }
+        }).attach();
 
         // Back button
         backButton.setOnClickListener(v -> finish());
-
-        updateTabButtons();
     }
 
-    private void displayBooks(int tab) {
-        List<Book> books = getDummyBooks(tab);
-        bookAdapter = new BookAdapter(this, books);
-        bookshelfRecycler.setLayoutManager(new GridLayoutManager(this, 2));
-        bookshelfRecycler.setAdapter(bookAdapter);
-    }
+    /**
+     * Adapter for ViewPager2 to manage fragments
+     */
+    private static class BookshelfPagerAdapter extends FragmentStateAdapter {
 
-    private void updateTabButtons() {
-        currentlyReadingBtn.setBackgroundColor(currentTab == 0 ? getResources().getColor(android.R.color.darker_gray) : getResources().getColor(android.R.color.white));
-        wantToReadBtn.setBackgroundColor(currentTab == 1 ? getResources().getColor(android.R.color.darker_gray) : getResources().getColor(android.R.color.white));
-        readBtn.setBackgroundColor(currentTab == 2 ? getResources().getColor(android.R.color.darker_gray) : getResources().getColor(android.R.color.white));
-    }
+        public BookshelfPagerAdapter(FragmentActivity fa) {
+            super(fa);
+        }
 
-    private List<Book> getDummyBooks(int tab) {
-        if (tab == 0) {
-            return DummyDataGenerator.getCurrentlyReading();
-        } else if (tab == 1) {
-            return DummyDataGenerator.getWantToRead();
-        } else {
-            return DummyDataGenerator.getAlreadyRead();
+        @Override
+        public Fragment createFragment(int position) {
+            switch (position) {
+                case 0:
+                    return BookshelfFragment.newInstance(BookshelfFragment.TAB_CURRENTLY_READING);
+                case 1:
+                    return BookshelfFragment.newInstance(BookshelfFragment.TAB_WANT_TO_READ);
+                case 2:
+                    return BookshelfFragment.newInstance(BookshelfFragment.TAB_READ);
+                default:
+                    return BookshelfFragment.newInstance(BookshelfFragment.TAB_CURRENTLY_READING);
+            }
+        }
+
+        @Override
+        public int getItemCount() {
+            return 3;
         }
     }
 }

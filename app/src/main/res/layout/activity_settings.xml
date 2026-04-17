@@ -16,7 +16,7 @@
         android:layout_height="40dp"
         android:padding="8dp"
         android:src="@drawable/ic_back"
-        android:contentDescription="Back"
+        android:contentDescription="@string/back"
         android:scaleType="centerInside"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

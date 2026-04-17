@@ -46,7 +46,7 @@
         android:id="@+id/reviewText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Review text"
+        android:text="A brilliant exploration of morality and prejudice. This novel is a timeless classic that everyone should read!"
         android:textSize="12sp"
         android:textColor="@color/black"
         android:lineSpacingExtra="2dp"

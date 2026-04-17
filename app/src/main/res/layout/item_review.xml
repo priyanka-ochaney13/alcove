@@ -36,9 +36,40 @@
         android:id="@+id/reviewText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Great book!"
+        android:text="This is an absolutely captivating masterpiece! The storytelling is incredible and kept me engaged throughout."
         android:textSize="12sp"
         android:textColor="@color/black"
-        android:lineSpacingExtra="2dp" />
+        android:lineSpacingExtra="2dp"
+        android:layout_marginBottom="8dp" />
+
+    <!-- Action Buttons (Edit/Delete) - Hidden by default -->
+    <LinearLayout
+        android:id="@+id/actionButtons"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="end"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/editBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Edit"
+            android:textSize="12sp"
+            android:background="@drawable/rounded_input_background"
+            android:textColor="@color/black"
+            android:layout_marginEnd="8dp" />
+
+        <Button
+            android:id="@+id/deleteBtn"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Delete"
+            android:textSize="12sp"
+            android:background="@drawable/rounded_input_background"
+            android:textColor="@color/black" />
+
+    </LinearLayout>
 
 </LinearLayout>

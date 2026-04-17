@@ -29,6 +29,58 @@ Thumbs.db
 *.jar
 *.aar
 
+# Firebase credentials
+backend/firebase-credentials.json
+backend/firebase-credentials1.json
+
+# Android build outputs
+app/build/
+app/google-services.json
+
 # Gradle wrapper (optional - include if you want to commit wrapper)
 # gradle-wrapper.jar
 # gradle-wrapper.properties
+
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+.venv/
+.env
+.env.local
+pip-log.txt
+pip-delete-this-directory.txt
+.tox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+*.egg-info/
+
+# Database files
+backend/*.db
+
+# Seed and test scripts
+backend/seed_db.py
+backend/seed_new_db.py
+backend/test_firebase_creds.py
+backend/add_column.py
+backend/inspect_db.py
+backend/app/api/endpoints
+backend/app/api/__pycache__/
+# Additional OS files
+*.log
+*.tmp
+*.swp
+*.swo
+
+
+

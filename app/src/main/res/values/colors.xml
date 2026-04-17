@@ -1,7 +1,46 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <!-- Primary Colors -->
+    <color name="primary">#4A7C59</color>
+    <color name="primary_dark">#2E5A3A</color>
+    <color name="primary_light">#7A9B7E</color>
+
+    <!-- Secondary Colors -->
+    <color name="secondary">#D4A574</color>
+    <color name="secondary_dark">#B88B5A</color>
+    <color name="secondary_light">#E8C49A</color>
+
+    <!-- Background and Surface -->
+    <color name="background">#FEFCF8</color>
+    <color name="surface">#FFFFFF</color>
+
+    <!-- On Colors (Text on backgrounds) -->
+    <color name="on_primary">#FFFFFF</color>
+    <color name="on_secondary">#000000</color>
+    <color name="on_background">#1C1B1F</color>
+    <color name="on_surface">#1C1B1F</color>
+
+    <!-- Semantic Colors -->
+    <color name="error">#BA1A1A</color>
+    <color name="success">#4CAF50</color>
+    <color name="warning">#FF9800</color>
+    <color name="info">#2196F3</color>
+
+    <!-- Neutral Colors -->
+    <color name="outline">#79747E</color>
+    <color name="outline_variant">#CAC4D0</color>
+    <color name="surface_variant">#E7E0EC</color>
+    <color name="on_surface_variant">#49454F</color>
+
+    <!-- Legacy Colors (for compatibility) -->
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="teal_700">#FF018786</color>
+    <color name="colorPrimary">#4A7C59</color>
     <color name="gray">#FF808080</color>
+    <color name="light_gray">#E0E0E0</color>
+    <color name="blue_500">#2196F3</color>
+    <color name="teal_700">#4A7C59</color>
+    <color name="sage_green">#4A7C59</color>
+    <color name="grayish_tan">#FEFCF8</color>
+    <color name="link">#4A7C59</color>
 </resources>

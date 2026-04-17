@@ -1,3 +1,35 @@
 <resources>
     <string name="app_name">alcove</string>
+    <string name="search">Search</string>
+    <string name="bookshelf">Bookshelf</string>
+    <string name="profile">Profile</string>
+    <string name="popular_books">Popular Books</string>
+    <string name="trending_now">Trending Now</string>
+    <string name="recommended_for_you">Recommended for You</string>
+    <string name="book_title">Book Title</string>
+    <string name="author_name">Author Name</string>
+    <string name="ratings">(%d ratings)</string>
+    <string name="add_to_shelf">Add to Shelf</string>
+    <string name="remove_from_shelf">Remove from Shelf</string>
+    <string name="book_cover">Book cover</string>
+    <string name="alcove">Alcove</string>
+    <string name="welcome_back">Welcome Back</string>
+    <string name="email_or_username">Email or Username</string>
+    <string name="password">Password</string>
+    <string name="login">Login</string>
+    <string name="forgot_password">Forgot Password?</string>
+    <string name="dont_have_account">Don\'t have an account? </string>
+    <string name="sign_up">Sign Up</string>
+    <string name="back">Back</string>
+    <string name="display">Display</string>
+    <string name="dark_mode">Dark Mode</string>
+    <string name="notifications">Notifications</string>
+    <string name="enable_notifications">Enable Notifications</string>
+    <string name="account">Account</string>
+    <string name="change_password">Change Password</string>
+    <string name="about">About</string>
+    <string name="about_this_app">About This App</string>
+    <string name="search_hint">Find your next favorite book</string>
+    <string name="home">Home</string>
+    <string name="no_ai_summary_yet">No AI summary available yet. Check back soon!</string>
 </resources>

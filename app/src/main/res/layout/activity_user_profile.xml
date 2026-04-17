@@ -43,8 +43,20 @@
                 android:layout_width="120dp"
                 android:layout_height="120dp"
                 android:src="@drawable/ic_profile"
-                android:scaleType="centerInside"
+                android:scaleType="centerCrop"
                 android:background="@drawable/rounded_input_background"
+                android:clipToOutline="true"
+                android:layout_marginBottom="16dp" />
+
+            <!-- Change Profile Picture Button -->
+            <Button
+                android:id="@+id/changeProfilePicBtn"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:text="Change Picture"
+                android:textSize="14sp"
+                android:textColor="@color/black"
+                android:background="@android:color/transparent"
                 android:layout_marginBottom="16dp" />
 
             <!-- User Name -->
@@ -66,6 +78,28 @@
                 android:text="john@example.com"
                 android:textSize="14sp"
                 android:textColor="@color/gray"
+                android:layout_marginBottom="8dp" />
+
+            <!-- User Bio -->
+            <TextView
+                android:id="@+id/userBio"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Book lover and avid reader. Always looking for the next great story!"
+                android:textSize="13sp"
+                android:textColor="@color/gray"
+                android:layout_marginBottom="8dp"
+                android:visibility="gone" />
+
+            <!-- User Location -->
+            <TextView
+                android:id="@+id/userLocation"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Location not enabled"
+                android:textSize="13sp"
+                android:textColor="@color/gray"
+                android:visibility="visible"
                 android:layout_marginBottom="32dp" />
 
             <!-- Stats Section -->
@@ -145,7 +179,7 @@
                         android:id="@+id/wantToReadCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="15"
+                        android:text="34"
                         android:textSize="20sp"
                         android:textStyle="bold"
                         android:textColor="@color/black" />
@@ -172,12 +206,45 @@
                 android:background="@drawable/rounded_button_background"
                 android:layout_marginBottom="12dp" />
 
+            <!-- Enable Location Button -->
+            <Button
+                android:id="@+id/enableLocationBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Enable Location"
+                android:textSize="16sp"
+                android:textColor="@color/white"
+                android:background="@drawable/rounded_button_background"
+                android:layout_marginBottom="12dp" />
+
             <!-- My Reviews Button -->
             <Button
                 android:id="@+id/myReviewsBtn"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="My Reviews"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/rounded_input_background"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Preferences Button -->
+            <Button
+                android:id="@+id/preferencesBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Preferences"
+                android:textSize="16sp"
+                android:textColor="@color/black"
+                android:background="@drawable/rounded_input_background"
+                android:layout_marginBottom="12dp" />
+
+            <!-- Reading Statistics Button -->
+            <Button
+                android:id="@+id/readingStatsBtn"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:text="Reading Statistics"
                 android:textSize="16sp"
                 android:textColor="@color/black"
                 android:background="@drawable/rounded_input_background"

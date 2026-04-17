@@ -7,11 +7,14 @@ import android.widget.EditText;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.activity.EdgeToEdge;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
+import androidx.core.view.WindowCompat;
+
+import com.google.firebase.auth.FirebaseAuth;
+import com.google.firebase.auth.FirebaseAuthException;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -19,13 +22,17 @@ public class LoginActivity extends AppCompatActivity {
     private EditText passwordInput;
     private Button loginButton;
     private TextView signUpLink;
+    private FirebaseAuth mAuth;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        EdgeToEdge.enable(this);
+
+        // Edge-to-edge: disable fitting system windows so content can draw behind system bars
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
         setContentView(R.layout.activity_login);
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main), (v, insets) -> {
+
+        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.loginMain), (v, insets) -> {
             Insets systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom);
             return insets;
@@ -36,13 +43,14 @@ public class LoginActivity extends AppCompatActivity {
         passwordInput = findViewById(R.id.passwordInput);
         loginButton = findViewById(R.id.loginButton);
         signUpLink = findViewById(R.id.signUpLink);
+        mAuth = FirebaseAuth.getInstance();
 
         // Login button click listener
         loginButton.setOnClickListener(v -> {
             String email = emailInput.getText().toString().trim();
             String password = passwordInput.getText().toString().trim();
 
-            // Validation (temporary - will connect to backend later)
+            // Validation
             if (email.isEmpty() || password.isEmpty()) {
                 Toast.makeText(LoginActivity.this, "Please fill in all fields", Toast.LENGTH_SHORT).show();
                 return;
@@ -53,12 +61,23 @@ public class LoginActivity extends AppCompatActivity {
                 return;
             }
 
-            // TODO: Send login request to backend
-            // For now, just navigate to home screen
-            Toast.makeText(LoginActivity.this, "Logging in...", Toast.LENGTH_SHORT).show();
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
-            finish();
+            // Disable UI while signing in
+            setUiEnabled(false);
+
+            // Use Firebase Authentication to sign in the user
+            mAuth.signInWithEmailAndPassword(email, password)
+                    .addOnSuccessListener(this, authResult -> {
+                        setUiEnabled(true);
+                        Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
+                    })
+                    .addOnFailureListener(this, e -> {
+                        setUiEnabled(true);
+                        String msg = mapAuthExceptionToMessage(e);
+                        Toast.makeText(LoginActivity.this, msg, Toast.LENGTH_LONG).show();
+                    });
         });
 
         // Sign up link click listener
@@ -66,5 +85,45 @@ public class LoginActivity extends AppCompatActivity {
             Intent intent = new Intent(LoginActivity.this, RegisterActivity.class);
             startActivity(intent);
         });
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        // Check if user is already logged in
+        if (mAuth.getCurrentUser() != null) {
+            // User is signed in, go to MainActivity
+            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+            startActivity(intent);
+            finish();
+        }
+    }
+
+    private void setUiEnabled(boolean enabled) {
+        loginButton.setEnabled(enabled);
+        signUpLink.setEnabled(enabled);
+        emailInput.setEnabled(enabled);
+        passwordInput.setEnabled(enabled);
+    }
+
+    private String mapAuthExceptionToMessage(Exception e) {
+        if (e instanceof FirebaseAuthException) {
+            FirebaseAuthException authException = (FirebaseAuthException) e;
+            String errorCode = authException.getErrorCode();
+            switch (errorCode) {
+                case "ERROR_INVALID_EMAIL":
+                    return "The email address is badly formatted.";
+                case "ERROR_WRONG_PASSWORD":
+                    return "The password is invalid or the user does not have a password.";
+                case "ERROR_USER_NOT_FOUND":
+                    return "There is no user record corresponding to this email.";
+                case "ERROR_EMAIL_ALREADY_IN_USE":
+                    return "The email address is already in use by another account.";
+                // Add more cases as needed
+                default:
+                    return "Authentication failed. Please try again.";
+            }
+        }
+        return "Authentication failed. Please try again.";
     }
 }
