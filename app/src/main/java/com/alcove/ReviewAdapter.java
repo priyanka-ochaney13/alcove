@@ -18,6 +18,8 @@ import androidx.recyclerview.widget.RecyclerView;
 import com.alcove.api.ApiClient;
 import com.alcove.api.ApiService;
 import com.alcove.models.AddToShelfResponse;
+import com.alcove.models.CreateReviewRequest;
+import com.alcove.models.ReviewResponse;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
@@ -95,12 +97,32 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
                 return;
             }
 
-            // TODO: Implement API call to update review
-            // For now, just update locally
-            review.setReviewText(newContent);
-            review.setRating(newRating);
-            notifyItemChanged(position);
-            Toast.makeText(context, "Review updated", Toast.LENGTH_SHORT).show();
+            // Create update request
+            CreateReviewRequest request = new CreateReviewRequest();
+            request.setContent(newContent);
+            request.setRating(newRating);
+
+            // Call API to update review
+            ApiService apiService = ApiClient.getClient().create(ApiService.class);
+            apiService.updateReview(bookId, request).enqueue(new Callback<ReviewResponse>() {
+                @Override
+                public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
+                    if (response.isSuccessful()) {
+                        // Update local review
+                        review.setReviewText(newContent);
+                        review.setRating(newRating);
+                        notifyItemChanged(position);
+                        Toast.makeText(context, "Review updated successfully", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(context, "Failed to update review", Toast.LENGTH_SHORT).show();
+                    }
+                }
+
+                @Override
+                public void onFailure(Call<ReviewResponse> call, Throwable t) {
+                    Toast.makeText(context, "Network error while updating review: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                }
+            });
         });
 
         builder.setNegativeButton("Cancel", null);
@@ -108,6 +130,7 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
     }
 
     private void showDeleteConfirmationDialog(Review review, int position) {
+        int positionToRemove = position;
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Delete Review");
         builder.setMessage("Are you sure you want to delete this review?");
@@ -120,8 +143,9 @@ public class ReviewAdapter extends RecyclerView.Adapter<ReviewAdapter.ReviewView
                 public void onResponse(Call<AddToShelfResponse> call, Response<AddToShelfResponse> response) {
                     if (response.isSuccessful()) {
                         // Remove review from list and notify adapter
-                        reviews.remove(position);
-                        notifyItemRemoved(position);
+                        reviews.remove(positionToRemove);
+                        notifyItemRemoved(positionToRemove);
+                        notifyItemRangeChanged(positionToRemove, reviews.size());
                         Toast.makeText(context, "Review deleted successfully", Toast.LENGTH_SHORT).show();
                     } else {
                         Toast.makeText(context, "Failed to delete review", Toast.LENGTH_SHORT).show();

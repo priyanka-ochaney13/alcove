@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/background"
     tools:context=".UserProfileActivity"
     tools:ignore="MissingDefaultResource">
 
@@ -51,12 +51,11 @@
             <!-- Change Profile Picture Button -->
             <Button
                 android:id="@+id/changeProfilePicBtn"
+                style="@style/AppButton.Secondary"
                 android:layout_width="wrap_content"
                 android:layout_height="48dp"
                 android:text="Change Picture"
                 android:textSize="14sp"
-                android:textColor="@color/black"
-                android:background="@android:color/transparent"
                 android:layout_marginBottom="16dp" />
 
             <!-- User Name -->
@@ -67,7 +66,7 @@
                 android:text="John Doe"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginBottom="8dp" />
 
             <!-- User Email -->
@@ -77,7 +76,7 @@
                 android:layout_height="wrap_content"
                 android:text="john@example.com"
                 android:textSize="14sp"
-                android:textColor="@color/gray"
+                android:textColor="@color/on_surface_variant"
                 android:layout_marginBottom="8dp" />
 
             <!-- User Bio -->
@@ -87,7 +86,7 @@
                 android:layout_height="wrap_content"
                 android:text="Book lover and avid reader. Always looking for the next great story!"
                 android:textSize="13sp"
-                android:textColor="@color/gray"
+                android:textColor="@color/on_surface_variant"
                 android:layout_marginBottom="8dp"
                 android:visibility="gone" />
 
@@ -98,178 +97,88 @@
                 android:layout_height="wrap_content"
                 android:text="Location not enabled"
                 android:textSize="13sp"
-                android:textColor="@color/gray"
+                android:textColor="@color/on_surface_variant"
                 android:visibility="visible"
                 android:layout_marginBottom="32dp" />
 
-            <!-- Stats Section -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginBottom="32dp">
 
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="12dp"
-                    android:background="@drawable/rounded_input_background">
-
-                    <TextView
-                        android:id="@+id/booksReadCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="42"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Books Read"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="12dp"
-                    android:layout_marginStart="8dp"
-                    android:layout_marginEnd="8dp"
-                    android:background="@drawable/rounded_input_background">
-
-                    <TextView
-                        android:id="@+id/currentlyReadingCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="3"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Reading"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="vertical"
-                    android:gravity="center"
-                    android:padding="12dp"
-                    android:background="@drawable/rounded_input_background">
-
-                    <TextView
-                        android:id="@+id/wantToReadCount"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="34"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Want to Read"
-                        android:textSize="12sp"
-                        android:textColor="@color/gray" />
-
-                </LinearLayout>
-
-            </LinearLayout>
 
             <!-- Edit Profile Button -->
             <Button
                 android:id="@+id/editProfileBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Edit Profile"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:background="@drawable/rounded_button_background"
+                android:textColor="@color/primary"
+                android:backgroundTint="@color/primary"
                 android:layout_marginBottom="12dp" />
 
             <!-- Enable Location Button -->
             <Button
                 android:id="@+id/enableLocationBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Enable Location"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:background="@drawable/rounded_button_background"
+                android:textColor="@color/primary"
+                android:backgroundTint="@color/primary"
                 android:layout_marginBottom="12dp" />
 
             <!-- My Reviews Button -->
             <Button
                 android:id="@+id/myReviewsBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="My Reviews"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:background="@drawable/rounded_input_background"
                 android:layout_marginBottom="12dp" />
 
             <!-- Preferences Button -->
             <Button
                 android:id="@+id/preferencesBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Preferences"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:background="@drawable/rounded_input_background"
                 android:layout_marginBottom="12dp" />
 
             <!-- Reading Statistics Button -->
             <Button
                 android:id="@+id/readingStatsBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Reading Statistics"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:background="@drawable/rounded_input_background"
                 android:layout_marginBottom="12dp" />
 
             <!-- Settings Button -->
             <Button
                 android:id="@+id/settingsBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Settings"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:background="@drawable/rounded_input_background"
                 android:layout_marginBottom="12dp" />
+
+            <Button
+                android:id="@+id/submitBookBtn"
+                style="@style/AppButton"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:text="Submit a Book"
+                android:visibility="gone" />
 
             <!-- Logout Button -->
             <Button
                 android:id="@+id/logoutBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Logout"
-                android:textSize="16sp"
-                android:textColor="@color/white"
-                android:background="@drawable/rounded_button_background" />
+                android:textColor="@color/error"
+                android:backgroundTint="@android:color/transparent" />
 
         </LinearLayout>
 

@@ -67,11 +67,34 @@ public class LoginActivity extends AppCompatActivity {
             // Use Firebase Authentication to sign in the user
             mAuth.signInWithEmailAndPassword(email, password)
                     .addOnSuccessListener(this, authResult -> {
-                        setUiEnabled(true);
-                        Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
-                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                        startActivity(intent);
-                        finish();
+                        final boolean[] syncDone = {false};
+                        authResult.getUser().getIdToken(true).addOnSuccessListener(tokenResult -> {
+                            if (syncDone[0]) return;
+                            syncDone[0] = true;
+
+                            com.alcove.models.FirebaseSyncRequest syncRequest = new com.alcove.models.FirebaseSyncRequest();
+                            syncRequest.setToken(tokenResult.getToken());
+                            com.alcove.api.ApiClient.getService().syncUser(syncRequest).enqueue(new retrofit2.Callback<com.alcove.models.FirebaseSyncResponse>() {
+                                @Override
+                                public void onResponse(retrofit2.Call<com.alcove.models.FirebaseSyncResponse> call, retrofit2.Response<com.alcove.models.FirebaseSyncResponse> response) {
+                                    setUiEnabled(true);
+                                    if (response.isSuccessful()) {
+                                        Toast.makeText(LoginActivity.this, "Welcome back!", Toast.LENGTH_SHORT).show();
+                                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                                        startActivity(intent);
+                                        finish();
+                                    } else {
+                                        Toast.makeText(LoginActivity.this, "Backend sync failed.", Toast.LENGTH_SHORT).show();
+                                    }
+                                }
+
+                                @Override
+                                public void onFailure(retrofit2.Call<com.alcove.models.FirebaseSyncResponse> call, Throwable t) {
+                                    setUiEnabled(true);
+                                    Toast.makeText(LoginActivity.this, "Backend sync failed: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                                }
+                            });
+                        });
                     })
                     .addOnFailureListener(this, e -> {
                         setUiEnabled(true);

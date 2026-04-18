@@ -23,12 +23,11 @@ public class ReadingStatisticsActivity extends AppCompatActivity {
     private TextView booksReadThisYearText;
     private ProgressBar yearlyProgressBar;
     private TextView yearlyGoalText;
-    private TextView currentMonthProgressText;
     private TextView totalBooksReadText;
     private TextView currentlyReadingText;
     private TextView averageRatingText;
-    private TextView favoriteGenreText;
     private TextView monthlyGoalText;
+    private TextView wantToReadText;
     private Button editGoalsBtn;
 
     @Override
@@ -53,12 +52,11 @@ public class ReadingStatisticsActivity extends AppCompatActivity {
         booksReadThisYearText = findViewById(R.id.booksReadThisYearText);
         yearlyProgressBar = findViewById(R.id.yearlyProgressBar);
         yearlyGoalText = findViewById(R.id.yearlyGoalText);
-        currentMonthProgressText = findViewById(R.id.currentMonthProgressText);
         totalBooksReadText = findViewById(R.id.totalBooksReadText);
         currentlyReadingText = findViewById(R.id.currentlyReadingText);
         averageRatingText = findViewById(R.id.averageRatingText);
-        favoriteGenreText = findViewById(R.id.favoriteGenreText);
         monthlyGoalText = findViewById(R.id.monthlyGoalText);
+        wantToReadText = findViewById(R.id.wantToReadText);
         editGoalsBtn = findViewById(R.id.editGoalsBtn);
 
         editGoalsBtn.setOnClickListener(v -> openPreferencesDialog());
@@ -73,13 +71,19 @@ public class ReadingStatisticsActivity extends AppCompatActivity {
                     ReadingStatisticsResponse stats = response.body();
                     updateUIWithStatistics(stats);
                 } else {
-                    Toast.makeText(ReadingStatisticsActivity.this, "Failed to load statistics", Toast.LENGTH_SHORT).show();
+                    String errorMsg = "Failed to load statistics";
+                    try {
+                        if (response.errorBody() != null) {
+                            errorMsg += ": " + response.errorBody().string();
+                        }
+                    } catch (Exception ignored) {}
+                    Toast.makeText(ReadingStatisticsActivity.this, errorMsg, Toast.LENGTH_LONG).show();
                 }
             }
 
             @Override
             public void onFailure(Call<ReadingStatisticsResponse> call, Throwable t) {
-                Toast.makeText(ReadingStatisticsActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(ReadingStatisticsActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_LONG).show();
             }
         });
     }
@@ -87,37 +91,24 @@ public class ReadingStatisticsActivity extends AppCompatActivity {
     private void updateUIWithStatistics(ReadingStatisticsResponse stats) {
         // This year progress
         int booksThisYear = stats.getBooksReadThisYear();
-        int monthlyGoal = stats.getMonthlyReadingGoal();
+        int yearlyGoal = stats.getYearlyReadingGoal();
         booksReadThisYearText.setText("Books read: " + booksThisYear);
-        yearlyProgressBar.setMax(monthlyGoal * 12); // Assuming yearly goal is 12x monthly
-        yearlyProgressBar.setProgress(booksThisYear);
-        yearlyGoalText.setText("Goal: " + (monthlyGoal * 12) + " books");
-
-        // Current month progress
-        currentMonthProgressText.setText("Books read: " + stats.getCurrentMonthProgress());
+        yearlyProgressBar.setIndeterminate(false);
+        yearlyProgressBar.setMax(yearlyGoal > 0 ? yearlyGoal : 1);
+        yearlyProgressBar.setProgress(Math.min(booksThisYear, yearlyGoal > 0 ? yearlyGoal : 1));
+        yearlyGoalText.setText("Goal: " + yearlyGoal + " books");
 
         // Overall stats
         totalBooksReadText.setText(String.valueOf(stats.getTotalBooksRead()));
         currentlyReadingText.setText(String.valueOf(stats.getCurrentlyReading()));
+        wantToReadText.setText(String.valueOf(stats.getWantToRead()));
 
         // Average rating
         Float avgRating = stats.getAverageRatingGiven();
-        if (avgRating != null) {
-            averageRatingText.setText(String.format("%.1f", avgRating));
-        } else {
-            averageRatingText.setText("0.0");
-        }
-
-        // Favorite genre
-        String favoriteGenre = stats.getFavoriteGenre();
-        if (favoriteGenre != null && !favoriteGenre.isEmpty()) {
-            favoriteGenreText.setText(favoriteGenre);
-        } else {
-            favoriteGenreText.setText("None");
-        }
+        averageRatingText.setText(avgRating != null ? String.format("%.1f", avgRating) : "—");
 
         // Monthly goal
-        monthlyGoalText.setText("Monthly goal: " + monthlyGoal + " books");
+        monthlyGoalText.setText("Monthly goal: " + stats.getMonthlyReadingGoal() + " books");
     }
 
     private void openPreferencesDialog() {

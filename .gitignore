@@ -76,11 +76,21 @@ backend/add_column.py
 backend/inspect_db.py
 backend/app/api/endpoints
 backend/app/api/__pycache__/
+backend/add_timezone_column.py
+backend/add_yearly_reading_goal_column.py
+backend/fix_images_gradient.py
+
+backend/fix_images_unsplash.py
+backend/fix_missing_images.py
+backend/seed_complete.py
+backend/update_images.py
+
 # Additional OS files
 *.log
 *.tmp
 *.swp
 *.swo
+app/src/main/java/com/alcove/api/ApiClient.java
 
 
-
+app/src/main/res/xml/network_security_config.xml

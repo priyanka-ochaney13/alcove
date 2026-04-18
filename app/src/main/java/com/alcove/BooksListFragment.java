@@ -134,7 +134,12 @@ public class BooksListFragment extends Fragment {
                     if (response.isSuccessful() && response.body() != null) {
                         books.clear();
                         for (BookResponse b : response.body()) {
-                            books.add(new Book(b.getId(), b.getTitle(), "", b.getAverageRating(), 0, b.getImageUrl()));
+                            // Extract author name from authors list
+                            String authorName = "";
+                            if (b.getAuthors() != null && !b.getAuthors().isEmpty()) {
+                                authorName = b.getAuthors().get(0).getName();
+                            }
+                            books.add(new Book(b.getId(), b.getTitle(), authorName, b.getAverageRating(), b.getRatingsCount(), b.getImageUrl()));
                         }
                         if (bookAdapter != null) {
                             bookAdapter.notifyDataSetChanged();

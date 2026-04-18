@@ -31,6 +31,12 @@ public class UserPreferencesResponse {
     @SerializedName("updated_at")
     private Date updatedAt;
 
+    @SerializedName("prefer_audiobooks")
+    private boolean preferAudiobooks;
+
+    @SerializedName("yearly_reading_goal")
+    private int yearlyReadingGoal;
+
     // Getters
     public int getId() { return id; }
     public int getUserId() { return userId; }
@@ -41,6 +47,8 @@ public class UserPreferencesResponse {
     public String getFavoriteGenres() { return favoriteGenres; }
     public Date getCreatedAt() { return createdAt; }
     public Date getUpdatedAt() { return updatedAt; }
+    public boolean prefersAudiobooks() { return preferAudiobooks; }
+    public int getYearlyReadingGoal() { return yearlyReadingGoal; }
 
     // Setters
     public void setMonthlyReadingGoal(int monthlyReadingGoal) { this.monthlyReadingGoal = monthlyReadingGoal; }

@@ -3,6 +3,7 @@ package com.alcove;
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.util.Log;
 import android.view.GestureDetector;
 import android.view.LayoutInflater;
 import android.view.MotionEvent;
@@ -72,12 +73,14 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         if (holder.bookCover != null) {
             String imageUrl = book.getImageUrl();
             if (imageUrl != null && !imageUrl.isEmpty()) {
+                Log.d("BookAdapter", "Loading image for book: " + book.getTitle() + " URL: " + imageUrl);
                 Glide.with(context)
                     .load(imageUrl)
                     .placeholder(R.drawable.ic_book_placeholder)
                     .error(R.drawable.ic_book_placeholder)
                     .into(holder.bookCover);
             } else {
+                Log.w("BookAdapter", "No image URL for book: " + book.getTitle());
                 holder.bookCover.setImageResource(R.drawable.ic_book_placeholder);
             }
         }
@@ -125,6 +128,7 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
         intent.putExtra(BookDetailsActivity.EXTRA_RATING_COUNT, book.getRatingCount());
         intent.putExtra("EXTRA_IMAGE_URL", book.getImageUrl());
 
+        Log.d("BookAdapter", "Navigating to details for book ID: " + book.getId());
         context.startActivity(intent);
     }
 
@@ -193,9 +197,10 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
             public void onResponse(Call<ShelfStatusResponse> call, Response<ShelfStatusResponse> response) {
                 if (response.isSuccessful() && response.body() != null) {
                     String shelf = response.body().getShelf();
+                    Integer shelfId = response.body().getShelfId();
                     if (shelf != null && !shelf.isEmpty()) {
                         // Book is on a shelf, show remove confirmation
-                        showRemoveConfirmationDialog(book, shelf);
+                        showRemoveConfirmationDialog(book, shelf, shelfId);
                     } else {
                         // Book is not on a shelf, show shelf selection
                         showShelfSelectionDialog(book);
@@ -260,24 +265,29 @@ public class BookAdapter extends RecyclerView.Adapter<BookAdapter.BookViewHolder
     /**
      * Show remove confirmation dialog
      */
-    private void showRemoveConfirmationDialog(Book book, String currentShelf) {
+    private void showRemoveConfirmationDialog(Book book, String currentShelf, Integer shelfId) {
+        if (shelfId == null) {
+            Toast.makeText(context, "Unable to remove: shelf information not available", Toast.LENGTH_SHORT).show();
+            return;
+        }
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context);
         builder.setTitle("Remove from Shelf")
-               .setMessage("Remove \"" + book.getTitle() + "\" from " + currentShelf + "?")
-               .setPositiveButton("Remove", (dialog, which) -> {
-                   // Implement remove functionality
-                   removeBookFromShelf(book.getId());
-               })
-               .setNegativeButton("Cancel", null)
-               .show();
+                .setMessage("Remove \"" + book.getTitle() + "\" from " + currentShelf + "?")
+                .setPositiveButton("Remove", (dialog, which) -> {
+                    // Implement remove functionality
+                    removeBookFromShelf(shelfId, book.getId());
+                })
+                .setNegativeButton("Cancel", null)
+                .show();
     }
 
     /**
      * Remove book from shelf
      */
-    private void removeBookFromShelf(int bookId) {
+    private void removeBookFromShelf(int shelfId, int bookId) {
         ApiService apiService = ApiClient.getService();
-        Call<AddToShelfResponse> call = apiService.removeBookFromShelf(bookId);
+        Call<AddToShelfResponse> call = apiService.removeBookFromShelf(shelfId, bookId);
         call.enqueue(new Callback<AddToShelfResponse>() {
             @Override
             public void onResponse(Call<AddToShelfResponse> call, Response<AddToShelfResponse> response) {

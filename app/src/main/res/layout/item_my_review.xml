@@ -15,7 +15,7 @@
         android:text="Book Title"
         android:textSize="16sp"
         android:textStyle="bold"
-        android:textColor="@color/black"
+        android:textColor="@color/on_surface"
         android:layout_marginBottom="4dp" />
 
     <!-- Book Author -->
@@ -25,7 +25,7 @@
         android:layout_height="wrap_content"
         android:text="Author"
         android:textSize="12sp"
-        android:textColor="@color/gray"
+        android:textColor="@color/on_surface_variant"
         android:layout_marginBottom="8dp" />
 
     <!-- Rating Bar -->
@@ -48,7 +48,7 @@
         android:layout_height="wrap_content"
         android:text="A brilliant exploration of morality and prejudice. This novel is a timeless classic that everyone should read!"
         android:textSize="12sp"
-        android:textColor="@color/black"
+        android:textColor="@color/on_surface"
         android:lineSpacingExtra="2dp"
         android:layout_marginBottom="8dp" />
 

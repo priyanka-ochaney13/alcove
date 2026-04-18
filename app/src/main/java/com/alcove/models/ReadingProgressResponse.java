@@ -26,13 +26,13 @@ public class ReadingProgressResponse {
     private Date endDate;
 
     @SerializedName("is_completed")
-    private boolean isCompleted;
+    private Boolean isCompleted;
 
-    @SerializedName("created_at")
-    private Date createdAt;
+    @SerializedName("shelf_movement_success")
+    private Boolean shelfMovementSuccess;
 
-    @SerializedName("updated_at")
-    private Date updatedAt;
+    @SerializedName("shelf_movement_message")
+    private String shelfMovementMessage;
 
     // Getters
     public int getId() { return id; }
@@ -42,14 +42,19 @@ public class ReadingProgressResponse {
     public Integer getTotalPages() { return totalPages; }
     public Date getStartDate() { return startDate; }
     public Date getEndDate() { return endDate; }
-    public boolean isCompleted() { return isCompleted; }
-    public Date getCreatedAt() { return createdAt; }
-    public Date getUpdatedAt() { return updatedAt; }
+    public Boolean getIsCompleted() { return isCompleted; }
+    public Boolean isCompleted() { return isCompleted != null && isCompleted; }
+
+    public Boolean getShelfMovementSuccess() { return shelfMovementSuccess; }
+    public String getShelfMovementMessage() { return shelfMovementMessage; }
 
     // Setters
     public void setCurrentPage(int currentPage) { this.currentPage = currentPage; }
     public void setTotalPages(Integer totalPages) { this.totalPages = totalPages; }
     public void setStartDate(Date startDate) { this.startDate = startDate; }
     public void setEndDate(Date endDate) { this.endDate = endDate; }
-    public void setCompleted(boolean completed) { isCompleted = completed; }
+    public void setIsCompleted(Boolean isCompleted) { this.isCompleted = isCompleted; }
+
+    public void setShelfMovementSuccess(Boolean shelfMovementSuccess) { this.shelfMovementSuccess = shelfMovementSuccess; }
+    public void setShelfMovementMessage(String shelfMovementMessage) { this.shelfMovementMessage = shelfMovementMessage; }
 }

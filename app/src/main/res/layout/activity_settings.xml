@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/background"
     tools:context=".SettingsActivity"
     tools:ignore="MissingDefaultResource">
 
@@ -43,34 +43,8 @@
                 android:text="Display"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginBottom="12dp" />
-
-            <!-- Dark Mode Toggle -->
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="56dp"
-                android:orientation="horizontal"
-                android:gravity="center_vertical"
-                android:paddingStart="12dp"
-                android:paddingEnd="12dp"
-                android:background="@drawable/rounded_input_background"
-                android:layout_marginBottom="16dp">
-
-                <TextView
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:text="Dark Mode"
-                    android:textSize="16sp"
-                    android:textColor="@color/black" />
-
-                <Switch
-                    android:id="@+id/darkModeSwitch"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content" />
-
-            </LinearLayout>
 
             <!-- Notifications Section -->
             <TextView
@@ -79,7 +53,7 @@
                 android:text="Notifications"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="12dp" />
 
@@ -100,7 +74,7 @@
                     android:layout_weight="1"
                     android:text="Enable Notifications"
                     android:textSize="16sp"
-                    android:textColor="@color/black" />
+                    android:textColor="@color/on_surface" />
 
                 <Switch
                     android:id="@+id/notificationsSwitch"
@@ -116,19 +90,17 @@
                 android:text="Account"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="12dp" />
 
             <!-- Change Password Button -->
             <Button
                 android:id="@+id/changePasswordBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Change Password"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:background="@drawable/rounded_input_background"
                 android:layout_marginBottom="12dp" />
 
             <!-- About Section -->
@@ -138,19 +110,17 @@
                 android:text="About"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginTop="16dp"
                 android:layout_marginBottom="12dp" />
 
             <!-- About Button -->
             <Button
                 android:id="@+id/aboutBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:text="About This App"
-                android:textSize="16sp"
-                android:textColor="@color/black"
-                android:background="@drawable/rounded_input_background" />
+                android:text="About This App" />
 
         </LinearLayout>
 

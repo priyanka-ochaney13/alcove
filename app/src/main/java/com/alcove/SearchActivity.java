@@ -107,7 +107,7 @@ public class SearchActivity extends AppCompatActivity {
             currentSearchCall.cancel();
         }
         ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        currentSearchCall = apiService.searchBooks(query, author, genre, minRating, maxRating, year, isbn);
+        currentSearchCall = apiService.searchBooks(query, author, genre, minRating, maxRating, year, isbn, 50);
         currentSearchCall.enqueue(new Callback<List<BookResponse>>() {
             @Override
             public void onResponse(Call<List<BookResponse>> call, Response<List<BookResponse>> response) {
@@ -151,40 +151,54 @@ public class SearchActivity extends AppCompatActivity {
         } else {
             filterPanel.setVisibility(View.GONE);
             filterToggleButton.setText("Show Filters");
+            // If we hide the filters, we might want to refresh the search if filters were active
+            String query = searchInput.getText().toString().trim();
+            performSearchWithCurrentFilters(query);
         }
     }
 
     private void applyFilters() {
         String query = searchInput.getText().toString().trim();
-        if (!query.isEmpty()) {
-            performSearchWithCurrentFilters(query);
-        }
+        performSearchWithCurrentFilters(query);
         toggleFilterPanel();
     }
 
     private void performSearchWithCurrentFilters(String query) {
         String author = authorFilter.getText().toString().trim();
+        if (author.isEmpty()) author = null;
+        
         String genre = genreFilter.getText().toString().trim();
+        if (genre.isEmpty()) genre = null;
+        
         Float minRating = null;
         Float maxRating = null;
         Integer year = null;
         String isbn = null;
 
         try {
-            if (!minRatingFilter.getText().toString().trim().isEmpty()) {
-                minRating = Float.parseFloat(minRatingFilter.getText().toString().trim());
+            String minRatingStr = minRatingFilter.getText().toString().trim();
+            if (!minRatingStr.isEmpty()) {
+                minRating = Float.parseFloat(minRatingStr);
             }
-            if (!maxRatingFilter.getText().toString().trim().isEmpty()) {
-                maxRating = Float.parseFloat(maxRatingFilter.getText().toString().trim());
+            
+            String maxRatingStr = maxRatingFilter.getText().toString().trim();
+            if (!maxRatingStr.isEmpty()) {
+                maxRating = Float.parseFloat(maxRatingStr);
             }
-            if (!yearFilter.getText().toString().trim().isEmpty()) {
-                year = Integer.parseInt(yearFilter.getText().toString().trim());
+            
+            String yearStr = yearFilter.getText().toString().trim();
+            if (!yearStr.isEmpty()) {
+                year = Integer.parseInt(yearStr);
             }
+            
             isbn = isbnFilter.getText().toString().trim();
+            if (isbn.isEmpty()) isbn = null;
+            
         } catch (NumberFormatException e) {
             Log.e("SearchActivity", "Error parsing filter values", e);
         }
 
+        Log.d("SearchActivity", "Performing search with q='" + query + "', author='" + author + "', genre='" + genre + "', minRating=" + minRating + ", maxRating=" + maxRating + ", year=" + year + ", isbn=" + isbn);
         performSearch(query, author, genre, minRating, maxRating, year, isbn);
     }
 

@@ -26,6 +26,9 @@ app.add_middleware(
 # Include API routes
 app.include_router(api_router, prefix=settings.API_V1_STR)
 
+# Mount the same router without prefix to handle legacy or direct relative requests
+app.include_router(api_router)
+
 
 @app.get("/")
 async def root():

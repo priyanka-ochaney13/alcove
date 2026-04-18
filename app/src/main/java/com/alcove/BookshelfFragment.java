@@ -111,7 +111,12 @@ public class BookshelfFragment extends Fragment {
                         if (response.isSuccessful() && response.body() != null) {
                             books.clear();
                             for (BookResponse b : response.body()) {
-                                books.add(new Book(b.getId(), b.getTitle(), "", b.getAverageRating(), 0, b.getImageUrl()));
+                                // Extract author name from authors list
+                                String authorName = "";
+                                if (b.getAuthors() != null && !b.getAuthors().isEmpty()) {
+                                    authorName = b.getAuthors().get(0).getName();
+                                }
+                                books.add(new Book(b.getId(), b.getTitle(), authorName, b.getAverageRating(), b.getRatingsCount(), b.getImageUrl()));
                             }
                             if (bookAdapter != null) {
                                 bookAdapter.notifyDataSetChanged();
@@ -142,9 +147,5 @@ public class BookshelfFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-        // Refresh books when fragment becomes visible
-        if (bookAdapter != null) {
-            fetchBooks();
-        }
     }
 }

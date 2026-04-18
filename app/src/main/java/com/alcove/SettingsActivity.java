@@ -7,7 +7,6 @@ import android.widget.Button;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowCompat;
@@ -15,7 +14,6 @@ import androidx.core.view.WindowInsetsCompat;
 
 public class SettingsActivity extends AppCompatActivity {
 
-    private Switch darkModeSwitch;
     private Switch notificationsSwitch;
     private Button changePasswordBtn;
     private Button aboutBtn;
@@ -33,20 +31,10 @@ public class SettingsActivity extends AppCompatActivity {
         });
 
         // Initialize views
-        darkModeSwitch = findViewById(R.id.darkModeSwitch);
         notificationsSwitch = findViewById(R.id.notificationsSwitch);
         changePasswordBtn = findViewById(R.id.changePasswordBtn);
         aboutBtn = findViewById(R.id.aboutBtn);
         backButton = findViewById(R.id.backButton);
-
-        // Dark mode toggle
-        darkModeSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            if (isChecked) {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
-            } else {
-                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
-            }
-        });
 
         // Notifications toggle
         notificationsSwitch.setOnCheckedChangeListener((buttonView, isChecked) -> {

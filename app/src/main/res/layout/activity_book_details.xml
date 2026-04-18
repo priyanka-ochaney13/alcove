@@ -5,7 +5,7 @@
     android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/background"
     tools:context=".BookDetailsActivity"
     tools:ignore="MissingDefaultResource">
 
@@ -55,7 +55,7 @@
                 android:text="Book Title"
                 android:textSize="24sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginBottom="8dp" />
 
             <!-- Book Author -->
@@ -65,7 +65,7 @@
                 android:layout_height="wrap_content"
                 android:text="Author Name"
                 android:textSize="16sp"
-                android:textColor="@color/gray"
+                android:textColor="@color/on_surface_variant"
                 android:layout_marginBottom="16dp" />
 
             <!-- Rating Bar -->
@@ -88,7 +88,7 @@
                 android:layout_height="wrap_content"
                 android:text="(1000 ratings)"
                 android:textSize="14sp"
-                android:textColor="@color/gray"
+                android:textColor="@color/on_surface_variant"
                 android:layout_marginBottom="24dp" />
 
             <!-- AI Summary Card -->
@@ -133,7 +133,7 @@
                 android:text="Description"
                 android:textSize="16sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginBottom="8dp" />
 
             <TextView
@@ -142,20 +142,91 @@
                 android:layout_height="wrap_content"
                 android:text="Pride and Prejudice follows the character development of Elizabeth Bennet, the protagonist of the book, who learns about the repercussions of hasty judgments and comes to appreciate the difference between superficial goodness and actual goodness."
                 android:textSize="14sp"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginBottom="24dp"
                 android:lineSpacingExtra="4dp" />
+
+            <!-- Reading Progress Section -->
+            <androidx.cardview.widget.CardView
+                android:id="@+id/progressCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="24dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="2dp"
+                android:visibility="gone">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="horizontal"
+                        android:gravity="center_vertical"
+                        android:layout_marginBottom="12dp">
+
+                        <ImageView
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:src="@drawable/ic_progress"
+                            app:tint="@color/primary"
+                            android:layout_marginEnd="8dp"/>
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:text="Your Reading Progress"
+                            android:textStyle="bold"
+                            android:textColor="@color/on_surface"
+                            android:textSize="14dp"/>
+
+                        <Button
+                            android:id="@+id/updateProgressShortcutBtn"
+                            style="@style/Widget.MaterialComponents.Button.TextButton"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:text="Update"
+                            android:textSize="12sp"
+                            android:textColor="@color/primary"
+                            android:padding="0dp"
+                            android:minWidth="0dp"
+                            android:minHeight="0dp"/>
+                    </LinearLayout>
+
+                    <ProgressBar
+                        android:id="@+id/bookDetailsProgressBar"
+                        style="?android:attr/progressBarStyleHorizontal"
+                        android:layout_width="match_parent"
+                        android:layout_height="8dp"
+                        android:layout_marginBottom="8dp"
+                        android:max="100"
+                        android:progress="0"
+                        android:progressTint="@color/primary" />
+
+                    <TextView
+                        android:id="@+id/bookDetailsProgressText"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="0 / 0 pages (0%)"
+                        android:textSize="12sp"
+                        android:textColor="@color/on_surface_variant" />
+                </LinearLayout>
+            </androidx.cardview.widget.CardView>
 
             <!-- Add to Shelf Button -->
             <Button
                 android:id="@+id/addToShelfButton"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
                 android:text="Add to My Books"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:background="@drawable/rounded_button_background"
+                android:textColor="@color/primary"
+                android:backgroundTint="@color/primary"
                 android:layout_marginBottom="24dp" />
 
             <!-- Reviews Section -->
@@ -165,19 +236,18 @@
                 android:text="Reviews"
                 android:textSize="18sp"
                 android:textStyle="bold"
-                android:textColor="@color/black"
+                android:textColor="@color/on_surface"
                 android:layout_marginBottom="12dp" />
 
             <!-- Write Review Button -->
             <Button
                 android:id="@+id/writeReviewBtn"
+                style="@style/AppButton"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:text="Write a Review"
-                android:textSize="16sp"
-                android:textStyle="bold"
-                android:textColor="@color/white"
-                android:background="@drawable/rounded_button_background"
+                android:textColor="@color/primary"
+                android:backgroundTint="@color/primary"
                 android:layout_marginBottom="16dp" />
 
             <androidx.recyclerview.widget.RecyclerView

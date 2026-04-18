@@ -6,12 +6,13 @@ from app.models import User
 from app.services.firebase_auth import FirebaseAuthService, firebase_initialized
 from app.services.auth_service import AuthService
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from typing import Optional
 
-security = HTTPBearer()
+security = HTTPBearer(auto_error=False)
 
 
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    credentials: Optional[HTTPAuthorizationCredentials] = Depends(security),
     db: Session = Depends(get_db)
 ) -> User:
     """
@@ -20,6 +21,28 @@ async def get_current_user(
     Used across all protected endpoints.
     Auto-creates user if this is their first request.
     """
+    # For development: if no credentials provided, use mock user
+    if not credentials:
+        print("No credentials provided - using mock user for development")
+        # Create or get a mock user
+        mock_uid = "dev-user-123"
+        user = db.query(User).filter(User.firebase_uid == mock_uid).first()
+
+        if not user:
+            try:
+                user, _ = AuthService.create_or_update_user_from_firebase(
+                    db=db,
+                    firebase_uid=mock_uid,
+                    email="dev@example.com",
+                    display_name="Dev User"
+                )
+            except Exception as e:
+                raise HTTPException(
+                    status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                    detail=f"Failed to create mock user: {str(e)}"
+                )
+        return user
+
     # For development: if Firebase is not initialized, create a mock user
     if not firebase_initialized:
         print("Firebase not initialized - using mock user for development")

@@ -233,7 +233,7 @@ public class ReadingProgressActivity extends AppCompatActivity {
         request.setIsCompleted(isCompleted);
 
         // If this is the first time updating and we don't have a start date, set it
-        if (currentProgress == null || currentProgress.getId() == 0) {
+        if (currentProgress == null) {
             request.setStartDate(new Date());
         }
 
@@ -250,7 +250,22 @@ public class ReadingProgressActivity extends AppCompatActivity {
                 if (response.isSuccessful() && response.body() != null) {
                     currentProgress = response.body();
                     updateUIWithProgress(currentProgress);
-                    Toast.makeText(ReadingProgressActivity.this, "Progress updated successfully!", Toast.LENGTH_SHORT).show();
+
+                    String successMessage = "Progress updated successfully!";
+
+                    // Check shelf movement status
+                    Boolean shelfSuccess = currentProgress.getShelfMovementSuccess();
+                    String shelfMessage = currentProgress.getShelfMovementMessage();
+
+                    if (shelfSuccess != null) {
+                        if (shelfSuccess) {
+                            successMessage += " " + shelfMessage;
+                        } else {
+                            successMessage += " Warning: " + shelfMessage;
+                        }
+                    }
+
+                    Toast.makeText(ReadingProgressActivity.this, successMessage, Toast.LENGTH_LONG).show();
                 } else {
                     Toast.makeText(ReadingProgressActivity.this, "Failed to update progress", Toast.LENGTH_SHORT).show();
                 }

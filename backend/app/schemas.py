@@ -24,8 +24,27 @@ class SimpleUserResponse(BaseModel):
     class Config:
         from_attributes = True
 
+class SimpleAuthorResponse(BaseModel):
+    name: str
+
+    class Config:
+        from_attributes = True
+
+class SimpleBookResponse(BaseModel):
+    id: int
+    title: str
+    image_url: Optional[str] = None
+    authors: List[SimpleAuthorResponse] = []
+    published_date: Optional[str] = None
+    description: Optional[str] = None
+    page_count: Optional[int] = None
+
+    class Config:
+        from_attributes = True
+
 class ReviewWithUserResponse(ReviewResponse):
     user: Optional[SimpleUserResponse] = None
+    book: Optional[SimpleBookResponse] = None
 
 class RatingResponse(BaseModel):
     id: int
@@ -175,6 +194,7 @@ class BookCreate(BaseModel):
 class ReviewBaseDef(BaseModel):
     title: Optional[str] = None
     content: str = Field(..., min_length=1, max_length=5000)
+    rating: Optional[int] = Field(None, ge=1, le=5)
 
 class ReviewCreate(ReviewBaseDef):
     pass
@@ -191,15 +211,40 @@ class RatingCreate(RatingBaseDef):
 class RatingUpdate(RatingBaseDef):
     pass
 
+
 class AddBookToShelfRequest(BaseModel):
     book_id: int
 
-# ============= Reading Progress Schemas =============
+
+class QuoteBase(BaseModel):
+    content: str = Field(..., min_length=1, max_length=1000)
+    page_number: Optional[int] = None
+
+
+class QuoteCreate(QuoteBase):
+    pass
+
+
+class QuoteUpdate(QuoteBase):
+    pass
+
+
+class QuoteResponse(QuoteBase):
+    id: int
+    user_id: int
+    book_id: int
+    created_at: datetime
+    user: SimpleUserResponse
+
+    class Config:
+        from_attributes = True
+
+
 class ReadingProgressBase(BaseModel):
     current_page: int = 0
     total_pages: Optional[int] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     is_completed: bool = False
 
 class ReadingProgressCreate(ReadingProgressBase):
@@ -208,8 +253,8 @@ class ReadingProgressCreate(ReadingProgressBase):
 class ReadingProgressUpdate(BaseModel):
     current_page: Optional[int] = None
     total_pages: Optional[int] = None
-    start_date: Optional[datetime] = None
-    end_date: Optional[datetime] = None
+    start_date: Optional[date] = None
+    end_date: Optional[date] = None
     is_completed: Optional[bool] = None
 
 class ReadingProgressResponse(ReadingProgressBase):
@@ -225,20 +270,21 @@ class ReadingProgressResponse(ReadingProgressBase):
 # ============= User Preferences Schemas =============
 class UserPreferencesBase(BaseModel):
     monthly_reading_goal: int = 12
+    yearly_reading_goal: int = 0
     reading_reminder_enabled: bool = True
     reading_reminder_time: str = "20:00"
     reading_reminder_days: str = "1,2,3,4,5,6,7"
     favorite_genres: Optional[str] = None
+    timezone: str = "UTC"
 
 class UserPreferencesCreate(UserPreferencesBase):
     pass
 
 class UserPreferencesUpdate(BaseModel):
     monthly_reading_goal: Optional[int] = None
-    reading_reminder_enabled: Optional[bool] = None
-    reading_reminder_time: Optional[str] = None
-    reading_reminder_days: Optional[str] = None
+    yearly_reading_goal: Optional[int] = None
     favorite_genres: Optional[str] = None
+    timezone: Optional[str] = None
 
 class UserPreferencesResponse(UserPreferencesBase):
     id: int
@@ -253,8 +299,8 @@ class UserPreferencesResponse(UserPreferencesBase):
 class ReadingStatisticsResponse(BaseModel):
     books_read_this_year: int
     monthly_reading_goal: int
-    current_month_progress: int
+    yearly_reading_goal: int
     total_books_read: int
     currently_reading: int
+    want_to_read: int
     average_rating_given: Optional[float] = None
-    favorite_genre: Optional[str] = None

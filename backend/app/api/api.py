@@ -1,15 +1,16 @@
 """API router configuration."""
 from fastapi import APIRouter, Depends, HTTPException, BackgroundTasks
-from sqlalchemy.orm import Session
+from sqlalchemy.orm import Session, joinedload
 from typing import List, Optional
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 from app.database import get_db, SessionLocal
-from app.models import Book, Genre, Author, Review, CustomShelf, ShelfBook, User, ReadingProgress, UserPreferences
-from app.schemas import BookResponse, BookDetailResponse, GenreResponse, FirebaseSyncRequest, FirebaseSyncResponse, CustomShelfResponse, CustomShelfCreate, AddBookToShelfRequest, ReviewResponse, ReviewWithUserResponse, ReviewCreate, UserUpdate, UserResponse, ReadingProgressResponse, ReadingProgressCreate, ReadingProgressUpdate, UserPreferencesResponse, UserPreferencesUpdate, ReadingStatisticsResponse
+from app.models import Book, Genre, Author, Review, CustomShelf, ShelfBook, User, ReadingProgress, UserPreferences, Rating, BookAuthor, BookGenre
+from app.schemas import BookResponse, BookDetailResponse, GenreResponse, FirebaseSyncRequest, FirebaseSyncResponse, CustomShelfResponse, CustomShelfCreate, AddBookToShelfRequest, ReviewResponse, ReviewWithUserResponse, ReviewCreate, UserUpdate, UserResponse, ReadingProgressResponse, ReadingProgressCreate, ReadingProgressUpdate, UserPreferencesResponse, UserPreferencesUpdate, ReadingStatisticsResponse, BookCreate
 from firebase_admin import auth
 from app.services.ai import generate_book_review_summary
 from app.api.dependencies import get_current_user
 from app.services.auth_service import AuthService
+import logging
 
 api_router = APIRouter()
 
@@ -27,7 +28,7 @@ def bg_generate_summary(book_id: int):
 def sync_user(request: FirebaseSyncRequest, db: Session = Depends(get_db)):
     """Sync Firebase user with backend database."""
     try:
-        decoded_token = auth.verify_id_token(request.token)
+        decoded_token = auth.verify_id_token(request.token, clock_skew_seconds=30)
         uid = decoded_token['uid']
         email = decoded_token.get('email')
         display_name = decoded_token.get('name')
@@ -53,9 +54,10 @@ def sync_user(request: FirebaseSyncRequest, db: Session = Depends(get_db)):
         return FirebaseSyncResponse(user=user, is_new_user=is_new)
     except (auth.InvalidIdTokenError, auth.ExpiredIdTokenError, auth.RevokedIdTokenError):
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
-    except ValueError:
-        raise HTTPException(status_code=503, detail="Authentication service is not configured")
-    except Exception:
+    except ValueError as e:
+        raise HTTPException(status_code=503, detail=f"Authentication service error: {e}")
+    except Exception as e:
+        logging.error(f"An unexpected error occurred during user sync: {e}", exc_info=True)
         raise HTTPException(status_code=401, detail="Invalid authentication credentials")
 
 # ----------------- User Profile -----------------
@@ -67,6 +69,8 @@ def get_user_profile(current_user: User = Depends(get_current_user), db: Session
 @api_router.put("/user/profile", response_model=UserResponse, tags=["User"])
 def update_user_profile(profile_update: UserUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Update current user's profile information."""
+    logging.basicConfig(level=logging.INFO)
+    logging.info(f"Updating profile for user {current_user.id}. Received data: {profile_update.dict()}")
     # Update fields if provided
     if profile_update.username is not None:
         # Check if username is already taken by another user
@@ -74,6 +78,7 @@ def update_user_profile(profile_update: UserUpdate, current_user: User = Depends
         if existing_user:
             raise HTTPException(status_code=400, detail="Username already taken")
         current_user.username = profile_update.username
+        logging.info(f"Updating username to {profile_update.username}")
 
     if profile_update.email is not None:
         # Check if email is already taken by another user
@@ -81,18 +86,22 @@ def update_user_profile(profile_update: UserUpdate, current_user: User = Depends
         if existing_user:
             raise HTTPException(status_code=400, detail="Email already taken")
         current_user.email = profile_update.email
+        logging.info(f"Updating email to {profile_update.email}")
 
     if profile_update.full_name is not None:
         current_user.full_name = profile_update.full_name
 
     if profile_update.bio is not None:
         current_user.bio = profile_update.bio
+        logging.info(f"Updating bio to {profile_update.bio}")
 
     if profile_update.avatar_url is not None:
         current_user.avatar_url = profile_update.avatar_url
+        logging.info(f"Updating avatar_url to {profile_update.avatar_url}")
 
     db.commit()
     db.refresh(current_user)
+    logging.info(f"Profile update committed for user {current_user.id}. New username: {current_user.username}")
     return current_user
 
 # ----------------- Books -----------------
@@ -136,13 +145,21 @@ def search_books(
     if q:
         query = query.filter(Book.title.ilike(f"%{q}%"))
     
-    # Author search
+    # Author search - use exists to avoid duplicate results
     if author:
-        query = query.join(Book.authors).filter(Author.name.ilike(f"%{author}%"))
+        query = query.filter(
+            Book.id.in_(
+                db.query(BookAuthor.book_id).join(Author).filter(Author.name.ilike(f"%{author}%"))
+            )
+        )
     
-    # Genre search
+    # Genre search - use exists to avoid duplicate results
     if genre:
-        query = query.join(Book.genres).filter(Genre.name.ilike(f"%{genre}%"))
+        query = query.filter(
+            Book.id.in_(
+                db.query(BookGenre.book_id).join(Genre).filter(Genre.name.ilike(f"%{genre}%"))
+            )
+        )
     
     # Rating filters
     if min_rating is not None:
@@ -165,7 +182,11 @@ def search_books(
 
 @api_router.get("/books/{book_id}", response_model=BookDetailResponse, tags=["Books"])
 def get_book(book_id: int, background_tasks: BackgroundTasks, db: Session = Depends(get_db)):
-    book = db.query(Book).filter(Book.id == book_id).first()
+    book = db.query(Book).options(
+        joinedload(Book.reviews).joinedload(Review.user),
+        joinedload(Book.authors),
+        joinedload(Book.genres)
+    ).filter(Book.id == book_id).first()
     if not book:
         raise HTTPException(status_code=404, detail="Book not found")
         
@@ -174,6 +195,57 @@ def get_book(book_id: int, background_tasks: BackgroundTasks, db: Session = Depe
         background_tasks.add_task(bg_generate_summary, book_id)
         
     return book
+
+@api_router.post("/books/submit", response_model=BookResponse, tags=["Books"])
+def submit_book(book_data: BookCreate, db: Session = Depends(get_db), current_user: User = Depends(get_current_user)):
+    """Submit a new book to the database."""
+    # Optional: Add admin/moderator check here
+    # if not current_user.is_admin:
+    #     raise HTTPException(status_code=403, detail="Only administrators can submit new books.")
+
+    # Check if a book with the same title already exists to avoid duplicates
+    existing_book = db.query(Book).filter(Book.title.ilike(book_data.title)).first()
+    if existing_book:
+        raise HTTPException(status_code=400, detail="A book with this title already exists.")
+
+    # Create new Book instance
+    new_book = Book(
+        title=book_data.title,
+        description=book_data.description,
+        page_count=book_data.page_count,
+        published_date=book_data.published_date,
+        image_url=book_data.image_url,
+        # Default values for fields not in BookCreate
+        ratings_count=0,
+        average_rating=0.0
+    )
+
+    # Handle authors
+    if book_data.authors:
+        author_names = [name.strip() for name in book_data.authors.split(',')]
+        for name in author_names:
+            author = db.query(Author).filter(Author.name.ilike(name)).first()
+            if not author:
+                author = Author(name=name)
+                db.add(author)
+            new_book.authors.append(author)
+
+    # Handle genres/categories
+    if book_data.categories:
+        genre_names = [name.strip() for name in book_data.categories.split(',')]
+        for name in genre_names:
+            genre = db.query(Genre).filter(Genre.name.ilike(name)).first()
+            if not genre:
+                # You might want to handle slug creation more robustly
+                genre = Genre(name=name, slug=name.lower().replace(' ', '-'))
+                db.add(genre)
+            new_book.genres.append(genre)
+
+    db.add(new_book)
+    db.commit()
+    db.refresh(new_book)
+
+    return new_book
 
 # ----------------- Genres -----------------
 @api_router.get("/genres", response_model=List[GenreResponse], tags=["Genres"])
@@ -218,8 +290,8 @@ def get_book_shelf_status(book_id: int, current_user: User = Depends(get_current
     
     if shelf_book:
         shelf = db.query(CustomShelf).filter(CustomShelf.id == shelf_book.shelf_id).first()
-        return {"shelf": shelf.name if shelf else None}
-    return {"shelf": None}
+        return {"shelf": shelf.name if shelf else None, "shelf_id": shelf.id if shelf else None}
+    return {"shelf": None, "shelf_id": None}
 
 @api_router.get("/user/shelf/reading", response_model=List[BookResponse], tags=["Shelves"])
 def get_user_currently_reading(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
@@ -247,33 +319,72 @@ def get_user_already_read(current_user: User = Depends(get_current_user), db: Se
 
 @api_router.post("/shelves/{shelf_id}/books", tags=["Shelves"])
 def add_book_to_shelf(shelf_id: int, request: AddBookToShelfRequest, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    logging.info(f"Attempting to add book to shelf. Shelf ID: {shelf_id}, Request: {request.dict()}")
     shelf = db.query(CustomShelf).filter(CustomShelf.id == shelf_id).first()
     if not shelf:
+        logging.error(f"Shelf with ID {shelf_id} not found.")
         raise HTTPException(status_code=404, detail="Shelf not found")
 
     book = db.query(Book).filter(Book.id == request.book_id).first()
     if not book:
+        logging.error(f"Book with ID {request.book_id} not found.")
         raise HTTPException(status_code=404, detail="Book not found")
 
     # Check if already in shelf
     exists = db.query(ShelfBook).filter_by(shelf_id=shelf.id, book_id=book.id).first()
     if exists:
+        logging.warning(f"Book {book.id} is already in shelf {shelf.id}.")
         return {"status": "success", "message": "Book already in shelf"}
 
-    # If shelf is exclusive, remove from other exclusive shelves
+    # If shelf is exclusive, remove from other exclusive shelves (but not this one)
     if shelf.is_exclusive:
-        exclusive_shelves = db.query(CustomShelf.id).filter_by(user_id=shelf.user_id, is_exclusive=True).all()
-        exclusive_shelf_ids = [s[0] for s in exclusive_shelves]
-        db.query(ShelfBook).filter(
-            ShelfBook.book_id == book.id,
-            ShelfBook.shelf_id.in_(exclusive_shelf_ids)
-        ).delete(synchronize_session=False)
-        db.commit()
+        # Get all exclusive shelves except the current target shelf
+        other_exclusive_shelves = db.query(CustomShelf.id).filter(
+            CustomShelf.user_id == shelf.user_id,
+            CustomShelf.is_exclusive == True,
+            CustomShelf.id != shelf.id  # Exclude the target shelf
+        ).all()
+        other_exclusive_shelf_ids = [s[0] for s in other_exclusive_shelves]
 
+        if other_exclusive_shelf_ids:
+            # Remove book from other exclusive shelves
+            deleted_count = db.query(ShelfBook).filter(
+                ShelfBook.book_id == book.id,
+                ShelfBook.shelf_id.in_(other_exclusive_shelf_ids)
+            ).delete(synchronize_session=False)
+
+            if deleted_count > 0:
+                print(f"Removed book {book.id} from {deleted_count} other exclusive shelves")
+                logging.info(f"Removed book {book.id} from {deleted_count} other exclusive shelves.")
+
+    # Add book to the target shelf
     shelf_book = ShelfBook(shelf_id=shelf.id, book_id=book.id)
     db.add(shelf_book)
     db.commit()
+    logging.info(f"Successfully added book {book.id} to shelf {shelf.id}.")
     return {"status": "success", "message": "Book added to shelf"}
+
+@api_router.delete("/shelves/{shelf_id}/books/{book_id}", tags=["Shelves"])
+def remove_book_from_shelf(shelf_id: int, book_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Remove a book from a specific shelf."""
+    shelf = db.query(CustomShelf).filter(CustomShelf.id == shelf_id).first()
+    if not shelf:
+        raise HTTPException(status_code=404, detail="Shelf not found")
+
+    # Check if the shelf belongs to the current user
+    if shelf.user_id != current_user.id:
+        raise HTTPException(status_code=403, detail="Access denied")
+
+    # Check if book exists in the shelf
+    shelf_book = db.query(ShelfBook).filter_by(shelf_id=shelf_id, book_id=book_id).first()
+    if not shelf_book:
+        raise HTTPException(status_code=404, detail="Book not found in this shelf")
+
+    # Remove the book from the shelf
+    db.delete(shelf_book)
+    db.commit()
+
+    return {"status": "success", "message": "Book removed from shelf"}
 
 # ----------------- Reviews -----------------
 @api_router.get("/user/reviews", response_model=List[ReviewWithUserResponse], tags=["Reviews"])
@@ -284,7 +395,7 @@ def get_my_reviews(current_user: User = Depends(get_current_user), db: Session =
 def get_book_reviews(book_id: int, skip: int = 0, limit: int = 50, db: Session = Depends(get_db)):
     return db.query(Review).filter(Review.book_id == book_id).order_by(Review.created_at.desc()).offset(skip).limit(limit).all()
 
-@api_router.post("/books/{book_id}/reviews", response_model=ReviewResponse, tags=["Reviews"])
+@api_router.post("/books/{book_id}/reviews", response_model=ReviewWithUserResponse, tags=["Reviews"])
 def create_review(book_id: int, review: ReviewCreate, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     db_book = db.query(Book).filter(Book.id == book_id).first()
     if not db_book:
@@ -295,14 +406,44 @@ def create_review(book_id: int, review: ReviewCreate, background_tasks: Backgrou
     if db_review:
         db_review.title = review.title
         db_review.content = review.content
+        db_review.rating = review.rating
     else:
         db_review = Review(
             book_id=book_id,
             user_id=current_user.id,
             title=review.title,
-            content=review.content
+            content=review.content,
+            rating=review.rating
         )
         db.add(db_review)
+    
+    db.commit()
+    db.refresh(db_review)
+    
+    # Invalidate old summary and generate a new one now that reviews have changed
+    db_book.ai_review_summary = None 
+    db.commit()
+    background_tasks.add_task(bg_generate_summary, book_id)
+    
+    return db_review
+
+
+@api_router.put("/books/{book_id}/reviews", response_model=ReviewWithUserResponse, tags=["Reviews"])
+def update_review(book_id: int, review: ReviewCreate, background_tasks: BackgroundTasks, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
+    """Update a review for a book."""
+    db_book = db.query(Book).filter(Book.id == book_id).first()
+    if not db_book:
+        raise HTTPException(status_code=404, detail="Book not found")
+    
+    # Check if review exists
+    db_review = db.query(Review).filter(Review.book_id == book_id, Review.user_id == current_user.id).first()
+    if not db_review:
+        raise HTTPException(status_code=404, detail="Review not found")
+    
+    # Update review
+    db_review.title = review.title
+    db_review.content = review.content
+    db_review.rating = review.rating
     
     db.commit()
     db.refresh(db_review)
@@ -339,32 +480,40 @@ def get_user_reading_progress(current_user: User = Depends(get_current_user), db
 
 @api_router.get("/user/books/{book_id}/reading-progress", response_model=ReadingProgressResponse, tags=["Reading Progress"])
 def get_book_reading_progress(book_id: int, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
-    """Get reading progress for a specific book."""
+    """Get reading progress for a specific book. If none exists, create a default one."""
     progress = db.query(ReadingProgress).filter(
         ReadingProgress.user_id == current_user.id,
         ReadingProgress.book_id == book_id
     ).first()
-    
+
     if not progress:
-        # Return default progress if none exists
-        return ReadingProgressResponse(
-            id=0,
+        # If no progress exists, create a new, empty progress object.
+        # This ensures the app always receives a valid object.
+        book = db.query(Book).filter(Book.id == book_id).first()
+        if not book:
+            raise HTTPException(status_code=404, detail="Book not found")
+
+        progress = ReadingProgress(
             user_id=current_user.id,
             book_id=book_id,
             current_page=0,
-            total_pages=None,
+            total_pages=book.page_count,  # Pre-fill total pages from book data
             start_date=None,
             end_date=None,
-            is_completed=False,
-            created_at=datetime.now(timezone.utc),
-            updated_at=datetime.now(timezone.utc)
+            is_completed=False
         )
-    
+        db.add(progress)
+        db.commit()
+        db.refresh(progress)
+        logging.info(f"Created new default reading progress for book {book_id} for user {current_user.id}")
+
     return progress
 
 @api_router.post("/user/books/{book_id}/reading-progress", response_model=ReadingProgressResponse, tags=["Reading Progress"])
 def create_or_update_reading_progress(book_id: int, progress_data: ReadingProgressUpdate, current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Create or update reading progress for a book."""
+    logging.info(f"Received progress update for book {book_id}, user {current_user.id}. Data: {progress_data.dict()}")
+
     # Check if book exists
     book = db.query(Book).filter(Book.id == book_id).first()
     if not book:
@@ -375,8 +524,9 @@ def create_or_update_reading_progress(book_id: int, progress_data: ReadingProgre
         ReadingProgress.user_id == current_user.id,
         ReadingProgress.book_id == book_id
     ).first()
-    
+
     if progress:
+        logging.info(f"Found existing progress for book {book_id}. Current state: is_completed={progress.is_completed}, end_date={progress.end_date}")
         # Update existing progress
         if progress_data.current_page is not None:
             progress.current_page = progress_data.current_page
@@ -386,25 +536,74 @@ def create_or_update_reading_progress(book_id: int, progress_data: ReadingProgre
             progress.start_date = progress_data.start_date
         if progress_data.end_date is not None:
             progress.end_date = progress_data.end_date
-        if progress_data.is_completed is not None:
-            progress.is_completed = progress_data.is_completed
-            if progress_data.is_completed and progress.end_date is None:
-                progress.end_date = datetime.now(timezone.utc)
+
+        # Handle completion status
+        if progress_data.is_completed is not None and progress_data.is_completed:
+            if not progress.is_completed: # Only update if it's a new completion
+                progress.is_completed = True
+                if progress.end_date is None:
+                    progress.end_date = date.today()
+                logging.info(f"Marking book {book_id} as completed. New state: is_completed={progress.is_completed}, end_date={progress.end_date}")
+        # Auto-completion based on page count
+        elif progress.total_pages and progress.current_page is not None and progress.current_page >= progress.total_pages:
+             if not progress.is_completed:
+                progress.is_completed = True
+                if progress.end_date is None:
+                    progress.end_date = date.today()
+                logging.info(f"Auto-completing book {book_id}. New state: is_completed={progress.is_completed}, end_date={progress.end_date}")
+
     else:
+        logging.info(f"No existing progress found for book {book_id}. Creating new entry.")
         # Create new progress
+        is_completed = progress_data.is_completed or False
+        current_page = progress_data.current_page or 0
+        total_pages = progress_data.total_pages
+
+        # Auto-completion for new entries
+        if total_pages and current_page >= total_pages:
+            is_completed = True
+
+        end_date = progress_data.end_date
+        if is_completed and end_date is None:
+            end_date = date.today()
+
         progress = ReadingProgress(
             user_id=current_user.id,
             book_id=book_id,
-            current_page=progress_data.current_page or 0,
-            total_pages=progress_data.total_pages,
-            start_date=progress_data.start_date or datetime.now(timezone.utc),
-            end_date=progress_data.end_date,
-            is_completed=progress_data.is_completed or False
+            current_page=current_page,
+            total_pages=total_pages,
+            start_date=progress_data.start_date or date.today(),
+            end_date=end_date,
+            is_completed=is_completed
         )
         db.add(progress)
-    
+        logging.info(f"Created new progress for book {book_id}. State: is_completed={progress.is_completed}, end_date={progress.end_date}")
+
     db.commit()
     db.refresh(progress)
+    logging.info(f"Committed progress for book {book_id}. Final state: is_completed={progress.is_completed}, end_date={progress.end_date}")
+
+    # Handle shelf movement if book is marked as completed
+    if progress.is_completed:
+        logging.info(f"Book {book_id} is completed, attempting to move to 'Read' shelf.")
+        try:
+            read_shelf = db.query(CustomShelf).filter(
+                CustomShelf.user_id == current_user.id,
+                CustomShelf.name == "Read"
+            ).first()
+            if read_shelf:
+                # Use the existing add_book_to_shelf logic for consistency
+                # This handles removing the book from other exclusive shelves
+                add_request = AddBookToShelfRequest(book_id=book_id)
+                add_book_to_shelf(shelf_id=read_shelf.id, request=add_request, current_user=current_user, db=db)
+                logging.info(f"Successfully moved book {book_id} to 'Read' shelf.")
+                # No need to commit here as add_book_to_shelf does it.
+        except Exception as e:
+            # The operation shouldn't fail the whole progress update.
+            # Log the error for debugging.
+            logging.error(f"Failed to move book {book_id} to 'Read' shelf for user {current_user.id}: {str(e)}")
+            pass # Continue even if shelf movement fails
+
     return progress
 
 # ----------------- User Preferences -----------------
@@ -431,14 +630,12 @@ def update_user_preferences(preferences_update: UserPreferencesUpdate, current_u
     # Update fields if provided
     if preferences_update.monthly_reading_goal is not None:
         preferences.monthly_reading_goal = preferences_update.monthly_reading_goal
-    if preferences_update.reading_reminder_enabled is not None:
-        preferences.reading_reminder_enabled = preferences_update.reading_reminder_enabled
-    if preferences_update.reading_reminder_time is not None:
-        preferences.reading_reminder_time = preferences_update.reading_reminder_time
-    if preferences_update.reading_reminder_days is not None:
-        preferences.reading_reminder_days = preferences_update.reading_reminder_days
+    if preferences_update.yearly_reading_goal is not None:
+        preferences.yearly_reading_goal = preferences_update.yearly_reading_goal
     if preferences_update.favorite_genres is not None:
         preferences.favorite_genres = preferences_update.favorite_genres
+    if preferences_update.timezone is not None:
+        preferences.timezone = preferences_update.timezone
     
     db.commit()
     db.refresh(preferences)
@@ -448,63 +645,61 @@ def update_user_preferences(preferences_update: UserPreferencesUpdate, current_u
 @api_router.get("/user/statistics", response_model=ReadingStatisticsResponse, tags=["Statistics"])
 def get_user_reading_statistics(current_user: User = Depends(get_current_user), db: Session = Depends(get_db)):
     """Get user's reading statistics."""
-    from datetime import datetime
-    from sqlalchemy import func
-    
-    current_year = datetime.now(timezone.utc).year
-    current_month = datetime.now(timezone.utc).month
-    
-    # Books read this year
-    books_read_this_year = db.query(func.count(ReadingProgress.id)).filter(
-        ReadingProgress.user_id == current_user.id,
-        ReadingProgress.is_completed == True,
-        func.extract('year', ReadingProgress.end_date) == current_year
-    ).scalar() or 0
-    
-    # Current month progress
-    current_month_progress = db.query(func.count(ReadingProgress.id)).filter(
-        ReadingProgress.user_id == current_user.id,
-        ReadingProgress.is_completed == True,
-        func.extract('year', ReadingProgress.end_date) == current_year,
-        func.extract('month', ReadingProgress.end_date) == current_month
-    ).scalar() or 0
-    
-    # Total books read
-    total_books_read = db.query(func.count(ReadingProgress.id)).filter(
-        ReadingProgress.user_id == current_user.id,
-        ReadingProgress.is_completed == True
-    ).scalar() or 0
-    
-    # Currently reading
-    currently_reading = db.query(func.count(ShelfBook.id)).join(CustomShelf).filter(
-        CustomShelf.user_id == current_user.id,
-        CustomShelf.name == "Currently Reading"
-    ).scalar() or 0
-    
-    # Monthly reading goal (from preferences)
+    from sqlalchemy import func, extract
+
+    # Get user preferences for goals
     preferences = db.query(UserPreferences).filter(UserPreferences.user_id == current_user.id).first()
     monthly_goal = preferences.monthly_reading_goal if preferences else 12
+    yearly_goal = preferences.yearly_reading_goal if preferences and preferences.yearly_reading_goal > 0 else monthly_goal * 12
+
+    # --- Calculate Books Read This Year ---
+    read_shelf = db.query(CustomShelf).filter(
+        CustomShelf.user_id == current_user.id,
+        CustomShelf.name == "Read"
+    ).first()
+
+    books_read_this_year = 0
+    if read_shelf:
+        current_year = datetime.now().year
+        
+        # Query ShelfBook for books added to the "Read" shelf this year
+        books_read_this_year = db.query(ShelfBook).filter(
+            ShelfBook.shelf_id == read_shelf.id,
+            extract('year', ShelfBook.added_at) == current_year
+        ).count()
+
+    # --- Other Statistics ---
+    total_books_read = db.query(ShelfBook).filter(ShelfBook.shelf_id == read_shelf.id).count() if read_shelf else 0
     
-    # Average rating given
-    avg_rating = db.query(func.avg(Rating.rating)).filter(Rating.user_id == current_user.id).scalar()
+    currently_reading_shelf = db.query(CustomShelf).filter(
+        CustomShelf.user_id == current_user.id,
+        CustomShelf.name == "Currently Reading"
+    ).first()
+    currently_reading_count = db.query(ShelfBook).filter(ShelfBook.shelf_id == currently_reading_shelf.id).count() if currently_reading_shelf else 0
+
+    want_to_read_shelf = db.query(CustomShelf).filter(
+        CustomShelf.user_id == current_user.id,
+        CustomShelf.name == "Want to Read"
+    ).first()
+    want_to_read_count = db.query(ShelfBook).filter(ShelfBook.shelf_id == want_to_read_shelf.id).count() if want_to_read_shelf else 0
+
+    # --- Calculate Average Rating ---
+    # Combine ratings from both the 'rating' and 'review' tables
+    user_ratings = db.query(Rating.rating).filter(Rating.user_id == current_user.id).all()
+    user_review_ratings = db.query(Review.rating).filter(Review.user_id == current_user.id, Review.rating.isnot(None)).all()
     
-    # Favorite genre (most read)
-    favorite_genre_query = db.query(
-        Genre.name,
-        func.count(ReadingProgress.id).label('count')
-    ).join(Book.genres).join(ReadingProgress, Book.id == ReadingProgress.book_id).filter(
-        ReadingProgress.user_id == current_user.id,
-        ReadingProgress.is_completed == True
-    ).group_by(Genre.id, Genre.name).order_by(func.count(ReadingProgress.id).desc()).first()
+    all_ratings = [r[0] for r in user_ratings] + [r[0] for r in user_review_ratings]
     
-    favorite_genre = favorite_genre_query[0] if favorite_genre_query else None
-    
+    avg_rating = sum(all_ratings) / len(all_ratings) if all_ratings else None
+    logging.info(f"Calculated average rating for user {current_user.id}: {avg_rating}")
+
     return ReadingStatisticsResponse(
         books_read_this_year=books_read_this_year,
         monthly_reading_goal=monthly_goal,
-        current_month_progress=current_month_progress,
+        yearly_reading_goal=yearly_goal,
         total_books_read=total_books_read,
-        currently_reading=currently_reading,
-        average_rating_given=float(avg_rating) if avg_rating else None,
-        favorite_genre=favorite_genre
+        currently_reading=currently_reading_count,
+        want_to_read=want_to_read_count,
+        average_rating_given=avg_rating
     )
+

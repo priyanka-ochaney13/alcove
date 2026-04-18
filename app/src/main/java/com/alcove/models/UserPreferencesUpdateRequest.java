@@ -6,17 +6,14 @@ public class UserPreferencesUpdateRequest {
     @SerializedName("monthly_reading_goal")
     private Integer monthlyReadingGoal;
 
-    @SerializedName("reading_reminder_enabled")
-    private Boolean readingReminderEnabled;
-
-    @SerializedName("reading_reminder_time")
-    private String readingReminderTime;
-
-    @SerializedName("reading_reminder_days")
-    private String readingReminderDays;
+    @SerializedName("yearly_reading_goal")
+    private Integer yearlyReadingGoal;
 
     @SerializedName("favorite_genres")
     private String favoriteGenres;
+
+    @SerializedName("timezone")
+    private String timezone;
 
     // Constructors
     public UserPreferencesUpdateRequest() {}
@@ -25,15 +22,12 @@ public class UserPreferencesUpdateRequest {
     public Integer getMonthlyReadingGoal() { return monthlyReadingGoal; }
     public void setMonthlyReadingGoal(Integer monthlyReadingGoal) { this.monthlyReadingGoal = monthlyReadingGoal; }
 
-    public Boolean getReadingReminderEnabled() { return readingReminderEnabled; }
-    public void setReadingReminderEnabled(Boolean readingReminderEnabled) { this.readingReminderEnabled = readingReminderEnabled; }
-
-    public String getReadingReminderTime() { return readingReminderTime; }
-    public void setReadingReminderTime(String readingReminderTime) { this.readingReminderTime = readingReminderTime; }
-
-    public String getReadingReminderDays() { return readingReminderDays; }
-    public void setReadingReminderDays(String readingReminderDays) { this.readingReminderDays = readingReminderDays; }
+    public Integer getYearlyReadingGoal() { return yearlyReadingGoal; }
+    public void setYearlyReadingGoal(Integer yearlyReadingGoal) { this.yearlyReadingGoal = yearlyReadingGoal; }
 
     public String getFavoriteGenres() { return favoriteGenres; }
     public void setFavoriteGenres(String favoriteGenres) { this.favoriteGenres = favoriteGenres; }
+
+    public String getTimezone() { return timezone; }
+    public void setTimezone(String timezone) { this.timezone = timezone; }
 }

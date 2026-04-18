@@ -4,7 +4,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/white"
+    android:background="@color/background"
     tools:context=".ReadingStatisticsActivity">
 
     <com.google.android.material.appbar.AppBarLayout
@@ -54,7 +54,7 @@
                         android:text="This Year Progress"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"
+                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp" />
 
                     <TextView
@@ -63,7 +63,7 @@
                         android:layout_height="wrap_content"
                         android:text="Books read: 0"
                         android:textSize="16sp"
-                        android:textColor="@color/black"
+                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="8dp" />
 
                     <ProgressBar
@@ -88,48 +88,13 @@
 
             </androidx.cardview.widget.CardView>
 
-            <!-- Monthly Progress Card -->
-            <androidx.cardview.widget.CardView
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginBottom="16dp"
-                app:cardCornerRadius="8dp"
-                app:cardElevation="4dp">
-
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical"
-                    android:padding="16dp">
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="This Month"
-                        android:textSize="20sp"
-                        android:textStyle="bold"
-                        android:textColor="@color/black"
-                        android:layout_marginBottom="16dp" />
-
-                    <TextView
-                        android:id="@+id/currentMonthProgressText"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="Books read: 0"
-                        android:textSize="16sp"
-                        android:textColor="@color/black" />
-
-                </LinearLayout>
-
-            </androidx.cardview.widget.CardView>
-
             <!-- Overall Stats Grid -->
             <GridLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginBottom="16dp"
                 android:columnCount="2"
-                android:rowCount="2">
+                android:rowCount="3">
 
                 <!-- Total Books Read -->
                 <androidx.cardview.widget.CardView
@@ -242,7 +207,7 @@
 
                 </androidx.cardview.widget.CardView>
 
-                <!-- Favorite Genre -->
+                <!-- Want to Read -->
                 <androidx.cardview.widget.CardView
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
@@ -259,20 +224,18 @@
                         android:gravity="center">
 
                         <TextView
-                            android:id="@+id/favoriteGenreText"
+                            android:id="@+id/wantToReadText"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="None"
-                            android:textSize="18sp"
+                            android:text="0"
+                            android:textSize="24sp"
                             android:textStyle="bold"
-                            android:textColor="?attr/colorPrimary"
-                            android:maxLines="1"
-                            android:ellipsize="end" />
+                            android:textColor="?attr/colorPrimary" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:text="Favorite Genre"
+                            android:text="Want to Read"
                             android:textSize="12sp"
                             android:textColor="@color/gray"
                             android:gravity="center" />
@@ -303,7 +266,7 @@
                         android:text="Reading Goals"
                         android:textSize="20sp"
                         android:textStyle="bold"
-                        android:textColor="@color/black"
+                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="16dp" />
 
                     <TextView
@@ -312,16 +275,17 @@
                         android:layout_height="wrap_content"
                         android:text="Monthly goal: 12 books"
                         android:textSize="16sp"
-                        android:textColor="@color/black"
+                        android:textColor="@color/on_surface"
                         android:layout_marginBottom="8dp" />
 
                     <Button
                         android:id="@+id/editGoalsBtn"
+                        style="@style/AppButton"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="Edit Goals"
-                        android:backgroundTint="?attr/colorPrimary"
-                        android:textColor="@android:color/white" />
+                        android:text="Edit goals"
+                        android:textColor="@color/black"
+                        android:backgroundTint="@color/primary" />
 
                 </LinearLayout>
 

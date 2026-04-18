@@ -18,8 +18,6 @@ import com.alcove.api.ApiClient;
 import com.alcove.api.ApiService;
 import com.alcove.models.CreateReviewRequest;
 import com.alcove.models.ReviewResponse;
-import com.google.firebase.auth.FirebaseAuth;
-import com.google.firebase.auth.FirebaseUser;
 
 import retrofit2.Call;
 import retrofit2.Callback;
@@ -111,47 +109,33 @@ public class ReviewActivity extends AppCompatActivity {
         String title = reviewTitleEdit.getText().toString().trim();
         final String finalTitle = title.isEmpty() ? null : title;
 
-        // Get Firebase token
-        FirebaseUser currentUser = FirebaseAuth.getInstance().getCurrentUser();
-        if (currentUser == null) {
-            Toast.makeText(this, "Please log in to submit a review", Toast.LENGTH_SHORT).show();
-            return;
-        }
+        // Create review request
+        CreateReviewRequest request = new CreateReviewRequest();
+        request.setContent(content);
+        request.setTitle(finalTitle);
+        request.setRating((int) rating);
 
-        currentUser.getIdToken(false).addOnSuccessListener(result -> {
-            String token = result.getToken();
-
-            // Create review request
-            CreateReviewRequest request = new CreateReviewRequest();
-            request.setBookId(bookId);
-            request.setContent(content);
-            request.setTitle(finalTitle);
-            request.setRating((int) rating);
-
-            // Submit review
-            ApiService apiService = ApiClient.getClient().create(ApiService.class);
-            apiService.createReview("Bearer " + token, request).enqueue(new Callback<ReviewResponse>() {
-                @Override
-                public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
-                    if (response.isSuccessful()) {
-                        Toast.makeText(ReviewActivity.this, "Review submitted successfully!", Toast.LENGTH_SHORT).show();
-                        // Return to book details and refresh
-                        Intent resultIntent = new Intent();
-                        resultIntent.putExtra("reviewAdded", true);
-                        setResult(RESULT_OK, resultIntent);
-                        finish();
-                    } else {
-                        Toast.makeText(ReviewActivity.this, "Failed to submit review", Toast.LENGTH_SHORT).show();
-                    }
+        // Submit review
+        ApiService apiService = ApiClient.getClient().create(ApiService.class);
+        apiService.createReview(bookId, request).enqueue(new Callback<ReviewResponse>() {
+            @Override
+            public void onResponse(Call<ReviewResponse> call, Response<ReviewResponse> response) {
+                if (response.isSuccessful()) {
+                    Toast.makeText(ReviewActivity.this, "Review submitted successfully!", Toast.LENGTH_SHORT).show();
+                    // Return to book details and refresh
+                    Intent resultIntent = new Intent();
+                    resultIntent.putExtra("reviewAdded", true);
+                    setResult(RESULT_OK, resultIntent);
+                    finish();
+                } else {
+                    Toast.makeText(ReviewActivity.this, "Failed to submit review", Toast.LENGTH_SHORT).show();
                 }
+            }
 
-                @Override
-                public void onFailure(Call<ReviewResponse> call, Throwable t) {
-                    Toast.makeText(ReviewActivity.this, "Network error", Toast.LENGTH_SHORT).show();
-                }
-            });
-        }).addOnFailureListener(e -> {
-            Toast.makeText(this, "Authentication error", Toast.LENGTH_SHORT).show();
+            @Override
+            public void onFailure(Call<ReviewResponse> call, Throwable t) {
+                Toast.makeText(ReviewActivity.this, "Network error: " + t.getMessage(), Toast.LENGTH_SHORT).show();
+            }
         });
     }
 }

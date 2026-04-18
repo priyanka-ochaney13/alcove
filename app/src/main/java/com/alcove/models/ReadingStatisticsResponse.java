@@ -9,8 +9,8 @@ public class ReadingStatisticsResponse {
     @SerializedName("monthly_reading_goal")
     private int monthlyReadingGoal;
 
-    @SerializedName("current_month_progress")
-    private int currentMonthProgress;
+    @SerializedName("yearly_reading_goal")
+    private int yearlyReadingGoal;
 
     @SerializedName("total_books_read")
     private int totalBooksRead;
@@ -18,27 +18,17 @@ public class ReadingStatisticsResponse {
     @SerializedName("currently_reading")
     private int currentlyReading;
 
+    @SerializedName("want_to_read")
+    private int wantToRead;
+
     @SerializedName("average_rating_given")
     private Float averageRatingGiven;
 
-    @SerializedName("favorite_genre")
-    private String favoriteGenre;
-
-    // Getters
     public int getBooksReadThisYear() { return booksReadThisYear; }
     public int getMonthlyReadingGoal() { return monthlyReadingGoal; }
-    public int getCurrentMonthProgress() { return currentMonthProgress; }
+    public int getYearlyReadingGoal() { return yearlyReadingGoal; }
     public int getTotalBooksRead() { return totalBooksRead; }
     public int getCurrentlyReading() { return currentlyReading; }
+    public int getWantToRead() { return wantToRead; }
     public Float getAverageRatingGiven() { return averageRatingGiven; }
-    public String getFavoriteGenre() { return favoriteGenre; }
-
-    // Setters
-    public void setBooksReadThisYear(int booksReadThisYear) { this.booksReadThisYear = booksReadThisYear; }
-    public void setMonthlyReadingGoal(int monthlyReadingGoal) { this.monthlyReadingGoal = monthlyReadingGoal; }
-    public void setCurrentMonthProgress(int currentMonthProgress) { this.currentMonthProgress = currentMonthProgress; }
-    public void setTotalBooksRead(int totalBooksRead) { this.totalBooksRead = totalBooksRead; }
-    public void setCurrentlyReading(int currentlyReading) { this.currentlyReading = currentlyReading; }
-    public void setAverageRatingGiven(Float averageRatingGiven) { this.averageRatingGiven = averageRatingGiven; }
-    public void setFavoriteGenre(String favoriteGenre) { this.favoriteGenre = favoriteGenre; }
 }

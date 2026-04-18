@@ -39,9 +39,6 @@ public class UserProfileActivity extends AppCompatActivity {
     private TextView userName;
     private TextView userEmail;
     private TextView userLocation;
-    private TextView booksReadCount;
-    private TextView currentlyReadingCount;
-    private TextView wantToReadCount;
     private Button editProfileBtn;
     private Button myReviewsBtn;
     private Button settingsBtn;
@@ -90,27 +87,30 @@ public class UserProfileActivity extends AppCompatActivity {
         userName = findViewById(R.id.userName);
         userEmail = findViewById(R.id.userEmail);
         userLocation = findViewById(R.id.userLocation);
-        booksReadCount = findViewById(R.id.booksReadCount);
-        currentlyReadingCount = findViewById(R.id.currentlyReadingCount);
-        wantToReadCount = findViewById(R.id.wantToReadCount);
         editProfileBtn = findViewById(R.id.editProfileBtn);
         myReviewsBtn = findViewById(R.id.myReviewsBtn);
         settingsBtn = findViewById(R.id.settingsBtn);
         logoutBtn = findViewById(R.id.logoutBtn);
         backButton = findViewById(R.id.backButton);
         changeProfilePicBtn = findViewById(R.id.changeProfilePicBtn);
+        changeProfilePicBtn.setVisibility(android.view.View.GONE); // hide it until real upload is implemented
         enableLocationBtn = findViewById(R.id.enableLocationBtn);
         userBio = findViewById(R.id.userBio);
         preferencesBtn = findViewById(R.id.preferencesBtn);
         readingStatsBtn = findViewById(R.id.readingStatsBtn);
 
-        // Populate counts: keep these counters fixed at 0 per request
-        booksReadCount.setText("0");
-        currentlyReadingCount.setText("0");
-        wantToReadCount.setText("0");
 
         // Populate name/email/photo with placeholder values (auth disabled in demo mode)
         updateProfileFromFirebase();
+
+        FirebaseUser firebaseUser = FirebaseAuth.getInstance().getCurrentUser();
+        Button submitBookBtn = findViewById(R.id.submitBookBtn);
+        if (firebaseUser != null && "veschwab@gmail.com".equals(firebaseUser.getEmail())) {
+            submitBookBtn.setVisibility(android.view.View.VISIBLE);
+            submitBookBtn.setOnClickListener(v -> startActivity(new Intent(UserProfileActivity.this, SubmitBookActivity.class)));
+        } else {
+            submitBookBtn.setVisibility(android.view.View.GONE);
+        }
 
         // Button listeners
         backButton.setOnClickListener(v -> finish());
@@ -145,6 +145,11 @@ public class UserProfileActivity extends AppCompatActivity {
             Intent intent = new Intent(UserProfileActivity.this, ReadingStatisticsActivity.class);
             startActivity(intent);
         });
+
+        // Check if we need to open preferences dialog
+        if (getIntent().getBooleanExtra("open_preferences", false)) {
+            preferencesBtn.post(this::showPreferencesDialog);
+        }
     }
 
     /**
@@ -262,9 +267,6 @@ public class UserProfileActivity extends AppCompatActivity {
 
                     // Store profile data for edit dialog
                     currentUserProfile = userProfile;
-
-                    // Load user reading counts
-                    loadUserCounts();
                 }
             }
 
@@ -276,34 +278,6 @@ public class UserProfileActivity extends AppCompatActivity {
         });
     }
 
-    private void loadUserCounts() {
-        com.alcove.api.ApiService apiService = com.alcove.api.ApiClient.getClient().create(com.alcove.api.ApiService.class);
-        apiService.getUserStatistics().enqueue(new retrofit2.Callback<com.alcove.models.ReadingStatisticsResponse>() {
-            @Override
-            public void onResponse(retrofit2.Call<com.alcove.models.ReadingStatisticsResponse> call, retrofit2.Response<com.alcove.models.ReadingStatisticsResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    com.alcove.models.ReadingStatisticsResponse stats = response.body();
-                    booksReadCount.setText(String.valueOf(stats.getTotalBooksRead()));
-                    currentlyReadingCount.setText(String.valueOf(stats.getCurrentlyReading()));
-                    // For want to read, we can fetch separately or set to 0 for now
-                    wantToReadCount.setText("0"); // TODO: Implement want to read count
-                } else {
-                    // Fallback to 0
-                    booksReadCount.setText("0");
-                    currentlyReadingCount.setText("0");
-                    wantToReadCount.setText("0");
-                }
-            }
-
-            @Override
-            public void onFailure(retrofit2.Call<com.alcove.models.ReadingStatisticsResponse> call, Throwable t) {
-                // Fallback to 0
-                booksReadCount.setText("0");
-                currentlyReadingCount.setText("0");
-                wantToReadCount.setText("0");
-            }
-        });
-    }
 
     private void showEditProfileDialog() {
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
@@ -509,6 +483,8 @@ public class UserProfileActivity extends AppCompatActivity {
     }
 
     private void showPreferencesDialogWithData(com.alcove.models.UserPreferencesResponse currentPrefs) {
+        if (isFinishing() || isDestroyed()) return;
+
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Reading Preferences");
 
@@ -517,58 +493,45 @@ public class UserProfileActivity extends AppCompatActivity {
         layout.setOrientation(android.widget.LinearLayout.VERTICAL);
         layout.setPadding(32, 16, 32, 16);
 
-        // Reading goal preference
-        android.widget.TextView goalLabel = new android.widget.TextView(this);
-        goalLabel.setText("Monthly Reading Goal");
-        goalLabel.setTextSize(16);
-        goalLabel.setTextColor(ContextCompat.getColor(this, android.R.color.black));
-        goalLabel.setPadding(0, 0, 0, 8);
-        layout.addView(goalLabel);
+        // Monthly reading goal preference
+        android.widget.TextView monthlyGoalLabel = new android.widget.TextView(this);
+        monthlyGoalLabel.setText("Monthly Reading Goal");
+        monthlyGoalLabel.setTextSize(16);
+        monthlyGoalLabel.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+        monthlyGoalLabel.setPadding(0, 0, 0, 8);
+        layout.addView(monthlyGoalLabel);
 
-        android.widget.EditText goalInput = new android.widget.EditText(this);
-        goalInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-        goalInput.setText(currentPrefs != null ? String.valueOf(currentPrefs.getMonthlyReadingGoal()) : "12");
-        goalInput.setBackgroundResource(R.drawable.rounded_input_background);
-        goalInput.setPadding(16, 16, 16, 16);
-        layout.addView(goalInput);
+        android.widget.EditText monthlyGoalInput = new android.widget.EditText(this);
+        monthlyGoalInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        monthlyGoalInput.setText(currentPrefs != null ? String.valueOf(currentPrefs.getMonthlyReadingGoal()) : "12");
+        monthlyGoalInput.setBackgroundResource(R.drawable.rounded_input_background);
+        monthlyGoalInput.setPadding(16, 16, 16, 16);
+        monthlyGoalInput.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.black));
+        layout.addView(monthlyGoalInput);
 
-        // Reading reminder time
-        android.widget.TextView timeLabel = new android.widget.TextView(this);
-        timeLabel.setText("\nReminder Time (HH:MM)");
-        timeLabel.setTextSize(16);
-        timeLabel.setTextColor(getResources().getColor(android.R.color.black));
-        timeLabel.setPadding(0, 16, 0, 8);
-        layout.addView(timeLabel);
+        // Yearly reading goal preference
+        android.widget.TextView yearlyGoalLabel = new android.widget.TextView(this);
+        yearlyGoalLabel.setText("\nYearly Reading Goal");
+        yearlyGoalLabel.setTextSize(16);
+        yearlyGoalLabel.setTextColor(ContextCompat.getColor(this, android.R.color.black));
+        yearlyGoalLabel.setPadding(0, 16, 0, 8);
+        layout.addView(yearlyGoalLabel);
 
-        android.widget.EditText timeInput = new android.widget.EditText(this);
-        timeInput.setInputType(android.text.InputType.TYPE_CLASS_TEXT);
-        timeInput.setText(currentPrefs != null ? currentPrefs.getReadingReminderTime() : "20:00");
-        timeInput.setBackgroundResource(R.drawable.rounded_input_background);
-        timeInput.setPadding(16, 16, 16, 16);
-        layout.addView(timeInput);
-
-        // Notification preferences
-        android.widget.TextView notifLabel = new android.widget.TextView(this);
-        notifLabel.setText("\nNotifications");
-        notifLabel.setTextSize(16);
-        notifLabel.setTextColor(ContextCompat.getColor(this, android.R.color.black));
-        notifLabel.setPadding(0, 16, 0, 8);
-        layout.addView(notifLabel);
-
-        android.widget.CheckBox readingReminders = new android.widget.CheckBox(this);
-        readingReminders.setText("Daily reading reminders");
-        readingReminders.setChecked(currentPrefs == null || currentPrefs.isReadingReminderEnabled());
-        layout.addView(readingReminders);
+        android.widget.EditText yearlyGoalInput = new android.widget.EditText(this);
+        yearlyGoalInput.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        yearlyGoalInput.setText(currentPrefs != null ? String.valueOf(currentPrefs.getYearlyReadingGoal()) : "0");
+        yearlyGoalInput.setBackgroundResource(R.drawable.rounded_input_background);
+        yearlyGoalInput.setPadding(16, 16, 16, 16);
+        yearlyGoalInput.setTextColor(androidx.core.content.ContextCompat.getColor(this, android.R.color.black));
+        layout.addView(yearlyGoalInput);
 
         builder.setView(layout);
         builder.setPositiveButton("Save", (dialog, which) -> {
             // Collect values and save
             try {
-                int goal = Integer.parseInt(goalInput.getText().toString().trim());
-                String time = timeInput.getText().toString().trim();
-                boolean remindersEnabled = readingReminders.isChecked();
-
-                saveUserPreferences(goal, remindersEnabled, time);
+                int monthlyGoal = Integer.parseInt(monthlyGoalInput.getText().toString().trim());
+                int yearlyGoal = Integer.parseInt(yearlyGoalInput.getText().toString().trim());
+                saveUserPreferences(monthlyGoal, yearlyGoal);
             } catch (NumberFormatException e) {
                 Toast.makeText(this, "Invalid reading goal number", Toast.LENGTH_SHORT).show();
             }
@@ -577,11 +540,10 @@ public class UserProfileActivity extends AppCompatActivity {
         builder.show();
     }
 
-    private void saveUserPreferences(int monthlyGoal, boolean remindersEnabled, String reminderTime) {
+    private void saveUserPreferences(int monthlyGoal, int yearlyGoal) {
         com.alcove.models.UserPreferencesUpdateRequest request = new com.alcove.models.UserPreferencesUpdateRequest();
         request.setMonthlyReadingGoal(monthlyGoal);
-        request.setReadingReminderEnabled(remindersEnabled);
-        request.setReadingReminderTime(reminderTime);
+        request.setYearlyReadingGoal(yearlyGoal);
 
         com.alcove.api.ApiService apiService = com.alcove.api.ApiClient.getClient().create(com.alcove.api.ApiService.class);
         apiService.updateUserPreferences(request).enqueue(new retrofit2.Callback<com.alcove.models.UserPreferencesResponse>() {

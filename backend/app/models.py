@@ -1,7 +1,7 @@
-from sqlalchemy import Column, Integer, String, Text, Float, DateTime, ForeignKey, Table, Boolean, Date, UniqueConstraint
+from sqlalchemy import Column, Integer, String, Text, Float, DateTime, ForeignKey, Table, Boolean, Date, UniqueConstraint, func
 from sqlalchemy.orm import relationship
 from app.database import Base
-from datetime import datetime, timezone
+from datetime import datetime, timezone, date
 
 # --- JUNCTION TABLES (Many-to-Many) ---
 
@@ -23,7 +23,7 @@ class ShelfBook(Base):
     shelf_id = Column(Integer, ForeignKey("custom_shelf.id", ondelete="CASCADE"), primary_key=True)
     book_id = Column(Integer, ForeignKey("book.id", ondelete="CASCADE"), primary_key=True)
     position = Column(Integer, default=0)
-    added_at = Column(DateTime, default=datetime.now(timezone.utc))
+    added_at = Column(DateTime(timezone=True), default=func.now(), onupdate=func.now())
 
 # --- ENTITY MODELS ---
 
@@ -38,8 +38,8 @@ class User(Base):
     avatar_url = Column(String, nullable=True)
     is_active = Column(Boolean, default=True)
     is_superuser = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
     shelves = relationship("CustomShelf", back_populates="user", cascade="all, delete-orphan")
@@ -57,7 +57,7 @@ class CustomShelf(Base):
     is_default = Column(Boolean, default=False)
     is_exclusive = Column(Boolean, default=False)
     position = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     __table_args__ = (UniqueConstraint('user_id', 'name', name='_user_shelf_uc'),)
 
@@ -79,8 +79,8 @@ class Book(Base):
     image_url = Column(String, nullable=True)
     average_rating = Column(Float, nullable=True)
     ratings_count = Column(Integer, nullable=True)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # --- AI Feature Columns ---
     ai_review_summary = Column(Text, nullable=True)
@@ -92,7 +92,8 @@ class Book(Base):
     shelves = relationship("CustomShelf", secondary="shelf_book", back_populates="books")
     reviews = relationship("Review", back_populates="book", cascade="all, delete-orphan")
     ratings = relationship("Rating", back_populates="book", cascade="all, delete-orphan")
-    reading_progress = relationship("ReadingProgress", back_populates="book", cascade="all, delete-orphan")
+    progress = relationship("ReadingProgress", back_populates="book", cascade="all, delete-orphan")
+    quotes = relationship("Quote", back_populates="book", cascade="all, delete-orphan")
 
 class Author(Base):
     __tablename__ = "author"
@@ -103,8 +104,8 @@ class Author(Base):
     image_url = Column(String, nullable=True)
     website = Column(String, nullable=True)
     books_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
     books = relationship("Book", secondary="book_author", back_populates="authors")
@@ -116,7 +117,7 @@ class Genre(Base):
     slug = Column(String, unique=True, index=True, nullable=False)
     description = Column(Text, nullable=True)
     books_count = Column(Integer, default=0)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
 
     # Relationships
     books = relationship("Book", secondary="book_genre", back_populates="genres")
@@ -129,8 +130,8 @@ class Review(Base):
     title = Column(String, nullable=True)
     content = Column(Text, nullable=False)
     rating = Column(Integer, nullable=True)  # 1-5 stars for quick rating
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
     user = relationship("User", back_populates="reviews")
@@ -142,8 +143,8 @@ class Rating(Base):
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     book_id = Column(Integer, ForeignKey("book.id", ondelete="CASCADE"), index=True)
     rating = Column(Integer, nullable=False)  # 1-5 stars
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
     user = relationship("User", back_populates="ratings")
@@ -156,29 +157,47 @@ class ReadingProgress(Base):
     book_id = Column(Integer, ForeignKey("book.id", ondelete="CASCADE"), index=True)
     current_page = Column(Integer, default=0)
     total_pages = Column(Integer, nullable=True)
-    start_date = Column(DateTime, nullable=True)
-    end_date = Column(DateTime, nullable=True)
+    start_date = Column(Date, nullable=True)
+    end_date = Column(Date, nullable=True)
     is_completed = Column(Boolean, default=False)
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
-    user = relationship("User", back_populates="reading_progress")
-    book = relationship("Book", back_populates="reading_progress")
+    user = relationship("User")
+    book = relationship("Book", back_populates="progress")
 
     __table_args__ = (UniqueConstraint('user_id', 'book_id', name='_user_book_progress_uc'),)
+
+
+class Quote(Base):
+    __tablename__ = "quote"
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
+    book_id = Column(Integer, ForeignKey("book.id", ondelete="CASCADE"), index=True)
+    content = Column(Text, nullable=False)
+    page_number = Column(Integer, nullable=True)
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+
+    user = relationship("User")
+    book = relationship("Book", back_populates="quotes")
+
+    __table_args__ = (UniqueConstraint('user_id', 'book_id', 'content', name='_user_book_quote_uc'),)
+
 
 class UserPreferences(Base):
     __tablename__ = "user_preferences"
     id = Column(Integer, primary_key=True, index=True)
     user_id = Column(Integer, ForeignKey("user.id", ondelete="CASCADE"), index=True)
     monthly_reading_goal = Column(Integer, default=12)
+    yearly_reading_goal = Column(Integer, default=0)  # 0 means use 12x monthly goal
     reading_reminder_enabled = Column(Boolean, default=True)
     reading_reminder_time = Column(String, default="20:00")  # HH:MM format
     reading_reminder_days = Column(String, default="1,2,3,4,5,6,7")  # Comma-separated day numbers (1=Monday, 7=Sunday)
     favorite_genres = Column(Text, nullable=True)  # JSON string of genre IDs
-    created_at = Column(DateTime, default=datetime.now(timezone.utc))
-    updated_at = Column(DateTime, default=datetime.now(timezone.utc), onupdate=datetime.now(timezone.utc))
+    timezone = Column(String, default="UTC")  # User's timezone (e.g., "America/New_York", "Europe/London")
+    created_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc))
+    updated_at = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), onupdate=lambda: datetime.now(timezone.utc))
 
     # Relationships
     user = relationship("User", back_populates="preferences")

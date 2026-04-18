@@ -1,9 +1,51 @@
 <?xml version="1.0" encoding="utf-8"?>
 <network-security-config>
-    <!-- Allow cleartext traffic for development -->
+    <!-- Allow cleartext traffic for development and local testing -->
     <base-config cleartextTrafficPermitted="true">
         <trust-anchors>
             <certificates src="system" />
+            <certificates src="user" />
         </trust-anchors>
     </base-config>
+
+    <!-- Allow Open Library book covers over HTTPS -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">covers.openlibrary.org</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Allow Google Books images over HTTPS (fallback) -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">books.google.com</domain>
+        <domain includeSubdomains="true">lh3.googleusercontent.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Allow UI Avatars for book covers -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">ui-avatars.com</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
+
+    <!-- Allow local network testing (IPv4 subnet) -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true"></domain>
+        <domain includeSubdomains="true">localhost</domain>
+        <domain includeSubdomains="true">10.0.2.2</domain>
+    </domain-config>
+
+    <!-- Allow ngrok domain for backend API -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">ngrok-free.dev</domain>
+        <domain includeSubdomains="true">daniele-unkenned-tate.ngrok-free.dev</domain>
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </domain-config>
 </network-security-config>

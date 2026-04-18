@@ -22,55 +22,24 @@ public class ReadingReminderWorker extends Worker {
     @NonNull
     @Override
     public Result doWork() {
-        // Get user preferences to check if reminders are enabled
-        ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        apiService.getUserPreferences().enqueue(new Callback<UserPreferencesResponse>() {
-            @Override
-            public void onResponse(Call<UserPreferencesResponse> call, Response<UserPreferencesResponse> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    UserPreferencesResponse preferences = response.body();
-                    if (preferences.isReadingReminderEnabled()) {
-                        // Get currently reading count and show notification
-                        getCurrentlyReadingCountAndNotify();
-                    }
-                }
-            }
+        try {
+            ApiService apiService = ApiClient.getClient().create(ApiService.class);
 
-            @Override
-            public void onFailure(Call<UserPreferencesResponse> call, Throwable t) {
-                // Silently fail - don't show notification if we can't get preferences
-            }
-        });
+            Response<UserPreferencesResponse> prefResponse = apiService.getUserPreferences().execute();
+            if (!prefResponse.isSuccessful() || prefResponse.body() == null) return Result.success();
+            if (!prefResponse.body().isReadingReminderEnabled()) return Result.success();
 
+            Response<java.util.List<com.alcove.models.BookResponse>> readingResponse = apiService.getCurrentlyReading().execute();
+            if (!readingResponse.isSuccessful() || readingResponse.body() == null) return Result.success();
+
+            int count = readingResponse.body().size();
+            if (count > 0) {
+                NotificationUtil.showReadingReminder(getApplicationContext(), count);
+            }
+        } catch (Exception e) {
+            return Result.failure();
+        }
         return Result.success();
     }
 
-    private void getCurrentlyReadingCountAndNotify() {
-        ApiService apiService = ApiClient.getClient().create(ApiService.class);
-        apiService.getCurrentlyReading().enqueue(new Callback<java.util.List<com.alcove.models.BookResponse>>() {
-            @Override
-            public void onResponse(Call<java.util.List<com.alcove.models.BookResponse>> call, Response<java.util.List<com.alcove.models.BookResponse>> response) {
-                if (response.isSuccessful() && response.body() != null) {
-                    int currentlyReadingCount = response.body().size();
-                    if (currentlyReadingCount > 0) {
-                        NotificationUtil.showReadingReminder(getApplicationContext(), currentlyReadingCount);
-                    }
-                }
-            }
-
-            @Override
-            public void onFailure(Call<java.util.List<com.alcove.models.BookResponse>> call, Throwable t) {
-                // Fallback to old hardcoded method if API fails
-                int currentlyReadingCount = getCurrentlyReadingCount();
-                if (currentlyReadingCount > 0) {
-                    NotificationUtil.showReadingReminder(getApplicationContext(), currentlyReadingCount);
-                }
-            }
-        });
-    }
-
-    private int getCurrentlyReadingCount() {
-        // TODO: Replace with logic to check SQLite / Backend / Firebase for real data
-        return 2;
-    }
 }

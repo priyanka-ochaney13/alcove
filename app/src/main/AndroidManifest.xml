@@ -69,6 +69,12 @@
         <activity
             android:name=".ReadingStatisticsActivity"
             android:exported="false" />
+        <activity
+            android:name=".ReviewActivity"
+            android:exported="false" />
+        <activity
+            android:name=".SubmitBookActivity"
+            android:exported="false" />
     </application>
 
 </manifest>

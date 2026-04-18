@@ -1,6 +1,9 @@
 package com.alcove.models;
 
+import com.google.gson.annotations.SerializedName;
+
 public class AddBookToShelfRequest {
+    @SerializedName("book_id")
     private int book_id;
 
     public AddBookToShelfRequest() {}

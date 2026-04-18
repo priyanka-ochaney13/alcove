@@ -22,11 +22,12 @@ import retrofit2.http.POST;
 import retrofit2.http.Path;
 import retrofit2.http.Query;
 import retrofit2.http.Body;
-import retrofit2.http.Header;
 import retrofit2.http.DELETE;
 import retrofit2.http.PUT;
 
 public interface ApiService {
+    @POST("users/auth")
+    Call<com.alcove.models.FirebaseSyncResponse> syncUser(@Body com.alcove.models.FirebaseSyncRequest request);
 
     @GET("books")
     Call<List<BookResponse>> getBooks(
@@ -55,14 +56,18 @@ public interface ApiService {
             @Query("min_rating") Float minRating,
             @Query("max_rating") Float maxRating,
             @Query("publication_year") Integer publicationYear,
-            @Query("isbn") String isbn
+            @Query("isbn") String isbn,
+            @Query("limit") int limit
     );
 
     @GET("user/reviews")
     Call<List<ReviewResponse>> getUserReviews();
 
-    @POST("reviews")
-    Call<ReviewResponse> createReview(@Header("Authorization") String token, @Body CreateReviewRequest request);
+    @POST("books/{book_id}/reviews")
+    Call<ReviewResponse> createReview(@Path("book_id") int bookId, @Body CreateReviewRequest request);
+
+    @PUT("books/{book_id}/reviews")
+    Call<ReviewResponse> updateReview(@Path("book_id") int bookId, @Body CreateReviewRequest request);
 
     @GET("user/shelf/reading")
     Call<List<BookResponse>> getCurrentlyReading();
@@ -85,8 +90,8 @@ public interface ApiService {
     @DELETE("books/{book_id}/reviews")
     Call<AddToShelfResponse> deleteReview(@Path("book_id") int bookId);
 
-    @DELETE("books/remove/{book_id}")
-    Call<AddToShelfResponse> removeBookFromShelf(@Path("book_id") int bookId);
+    @DELETE("shelves/{shelf_id}/books/{book_id}")
+    Call<AddToShelfResponse> removeBookFromShelf(@Path("shelf_id") int shelfId, @Path("book_id") int bookId);
 
     @GET("user/profile")
     Call<UserResponse> getUserProfile();
@@ -114,4 +119,13 @@ public interface ApiService {
     // Statistics endpoint
     @GET("user/statistics")
     Call<ReadingStatisticsResponse> getUserStatistics();
+
+    @GET("books/{book_id}/reading-progress")
+    Call<ReadingProgressResponse> getBookReadingProgressDirect(@Path("book_id") int bookId);
+
+    @GET("books/{book_id}/reviews")
+    Call<List<ReviewResponse>> getBookReviews(@Path("book_id") int bookId, @Query("skip") int skip, @Query("limit") int limit);
+
+    @POST("books/submit")
+    Call<BookResponse> submitBook(@Body com.alcove.models.BookCreate request);
 }

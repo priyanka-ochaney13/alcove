@@ -15,6 +15,7 @@ except Exception as e:
     print("Make sure firebase-credentials.json contains a valid service account key")
     print("Get it from: Firebase Console → Project Settings → Service Accounts → Generate New Private Key")
     firebase_initialized = False
+    raise ValueError("Firebase initialization failed. Please check your firebase-credentials.json file.")
 
 
 class FirebaseAuthService:
@@ -32,7 +33,8 @@ class FirebaseAuthService:
             Dictionary with user info if valid, None if invalid
         """
         try:
-            decoded_token = firebase_auth.verify_id_token(token)
+            # Allow a 30-second clock skew for verification
+            decoded_token = firebase_auth.verify_id_token(token, clock_skew_seconds=30)
             return decoded_token
         except Exception as e:
             print(f"Token verification failed: {e}")
