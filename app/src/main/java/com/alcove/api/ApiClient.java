@@ -21,8 +21,6 @@ import java.util.concurrent.TimeUnit;
 public class ApiClient {
     private static Retrofit retrofit = null;
 
-    //private static final String BASE_URL = "http://192.168.29.147:8000/api/v1/";
-
     private static final String BASE_URL = "https://daniele-unkenned-tate.ngrok-free.dev/api/v1/";
     //private static final String BASE_URL = "http://10.0.2.2:8000/api/v1/";
 

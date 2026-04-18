@@ -1,1 +1,4 @@
 /build
+
+src/main/res/xml/network_security_config.xml
+src/main/java/com/alcove/api/ApiClient.java
